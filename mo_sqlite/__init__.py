@@ -8,5 +8,6 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 
-from mo_sqlite.sqlite import *
-
+from mo_sqlite.database import Sqlite
+from mo_sqlite.utils import *
+from mo_sqlite.types import json_type_to_sqlite_type
