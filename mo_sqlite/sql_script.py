@@ -8,19 +8,20 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from dataclasses import dataclass
-from typing import List, Tuple, Set
+from typing import List, Tuple
 
 from jx_base.expressions import Expression
-from mo_collections.queue import Queue
-from mo_sql import (
+from mo_future import flatten
+from mo_sqlite.expressions import SelectOp
+from mo_sqlite.expressions.sql_and_op import SqlAndOp
+from mo_sqlite.expressions.sql_eq_op import SqlEqOp
+from mo_sqlite.expressions.variable import Variable
+from mo_sqlite.utils import (
     JoinSQL,
     ConcatSQL,
     SQL_UNION_ALL,
     SQL_ORDERBY,
-    SQL_LEFT_JOIN,
     sql_iso,
-    SQL_EQ,
-    SQL_AND,
     SQL_ON,
     SQL_SELECT,
     SQL_FROM,
@@ -28,34 +29,38 @@ from mo_sql import (
     SQL,
     SQL_NULL,
     sql_list,
-    SQL_IS_NOT_NULL,
+    SQL_INNER_JOIN,
+    sql_alias,
+    quote_column,
 )
-from mo_sqlite import sql_alias, quote_column
 
-
-@dataclass
-class SelectOne:
-    name: str
-    value: Expression
 
 
 class SqlStep:
-    def __init__(self, parent, sql, selects, id, order):
-        self.parent: SqlStep = parent
-        self.id = -1
+    def __init__(self, parent, subquery, selects, uids, order):
+        self.parent: SqlStep = parent  # THE PARENT STEP
+        self.nested_path = None  # THE SEQUENCE OF TABLES JOINED TO GET HERE
+        self.id = None  # EACH subquery IN THE QUERY IS GIVEN AN ID
         self.start = None  # WHERE TO PLACE THE COLUMNS IN THE SELECT
         self.end = None  # THE END OF THE COLUMNS IN THE SELECT
-        self.sql: SQL = sql  # ASSUMED TO BE A SUB QUERY, INCLUDING THE id AND order COLUMNS
-        self.selects: List[SelectOne] = selects
-        self.uids: Tuple[Expression] = id  # TECHNICALLY EXPRESSIONS, LIKELY JUST COLUMN NAMES
-        self.order: Tuple[Expression] = order
+        self.subquery: SQL = subquery  # ASSUMED TO BE A SUB QUERY, INCLUDING THE id AND order COLUMNS
+        self.selects: SelectOp = selects # THE NAME/VALUE PAIRS TO SELECT FROM THE SUBQUERY
+        self.uids: Tuple[Expression] = uids  # USED FOR JOINING TO PARENT
+        self.order: Tuple[Expression] = order  # USED TO SORT THE FINAL RESULT
 
     def position(self, done, all_selects):
+        """
+        REGISTER ALL SELECTS INTO all_selects AND
+        RETURN NESTED PATH
+        """
         if self in done:
-            return
+            return self.nested_path
 
         if self.parent:
-            self.parent.position(done, all_selects)
+            self.nested_path = (self,) + self.parent.position(done, all_selects)
+        else:
+            self.nested_path = (self,)
+
         self.id = len(done)
         done.append(self)
         self.start = len(all_selects)
@@ -66,6 +71,7 @@ class SqlStep:
         for ci, _ in enumerate(self.selects):
             all_selects.append(f"c{self.id}_{ci}")
         self.end = len(all_selects)
+        return self.nested_path
 
     def node_sql(self, all_selects):
         """
@@ -83,7 +89,7 @@ class SqlStep:
                 *(quote_column(s) for s in all_selects[self.start : start_of_values]),
                 *(sql_alias(SQL_NULL, s) for s in all_selects[start_of_values : self.end]),
             ],
-            sql_alias(sql_iso(ConcatSQL(SQL_SELECT, sql_list(columns), SQL_FROM, sql_iso(self.sql),)), f"t{self.id}",),
+            sql_alias(sql_iso(ConcatSQL(SQL_SELECT, sql_list(columns), SQL_FROM, sql_iso(self.subquery), )), f"t{self.id}", ),
         )
 
     def leaf_sql(self, all_selects):
@@ -102,7 +108,7 @@ class SqlStep:
                 *(quote_column(s) for s in all_selects[self.start : self.end]),
                 *(sql_alias(SQL_NULL, s) for s in all_selects[self.end :]),
             ],
-            sql_alias(sql_iso(ConcatSQL(SQL_SELECT, sql_list(columns), SQL_FROM, sql_iso(self.sql),)), f"t{self.id}",),
+            sql_alias(sql_iso(ConcatSQL(SQL_SELECT, sql_list(columns), SQL_FROM, sql_iso(self.subquery), )), f"t{self.id}", ),
         )
 
     def branch_sql(self, done: List, sql_queries: List[SQL], all_selects: List[str]) -> Tuple:
@@ -111,7 +117,7 @@ class SqlStep:
         insert branch query into sql_queries
         """
         if self in done:
-            return
+            return (self,)
 
         if not self.parent:
             done.append(self)
@@ -130,30 +136,24 @@ class SqlStep:
         sql_selects.extend(selects)
         sql_branch.append(leaf)
         for step in nested_path[1:]:
-            sql_branch.append(SQL_LEFT_JOIN)
+            sql_branch.append(SQL_INNER_JOIN)
             selects, leaf = step.node_sql(all_selects)
             sql_selects.extend(selects)
             sql_branch.append(leaf)
             sql_branch.append(SQL_ON)
-            sql_branch.append(JoinSQL(
-                SQL_AND,
-                [
-                    ConcatSQL(quote_column(f"i{step.id}_{i}"), SQL_EQ, quote_column(f"i{step.parent.id}_{i}"),)
-                    for i, _ in enumerate(step.parent.uids)
-                ],
-            ))
-        sql_branch.append(SQL_LEFT_JOIN)
+            sql_branch.append(SqlAndOp(*(
+                SqlEqOp(Variable(f"i{step.id}_{i}"), Variable(f"i{step.parent.id}_{i}"))
+                for i, _ in enumerate(step.parent.uids)
+            )))
+        sql_branch.append(SQL_INNER_JOIN)
         selects, leaf = self.leaf_sql(all_selects)
         sql_selects.extend(selects)
         sql_branch.append(leaf)
         sql_branch.append(SQL_ON)
-        sql_branch.append(JoinSQL(
-            SQL_AND,
-            [
-                ConcatSQL(quote_column(f"i{self.id}_{i}"), SQL_EQ, quote_column(f"i{self.parent.id}_{i}"),)
-                for i, _ in enumerate(self.parent.uids)
-            ],
-        ))
+        sql_branch.append(SqlAndOp(*(
+            SqlEqOp(Variable(f"i{self.id}_{i}"), Variable(f"i{self.parent.id}_{i}"))
+            for i, _ in enumerate(self.parent.uids)
+        )))
         sql_queries.append(ConcatSQL(SQL_SELECT, sql_list(sql_selects), *sql_branch))
         return nested_path + (self,)
 
@@ -173,11 +173,11 @@ class SqlTree:
         for leaf in self.leaves:
             leaf.branch_sql(done, sql_queries, all_selects)
 
-        ordering = [f"o{n.id}_{oi}" for n in done for oi, ov in enumerate(n.order + n.uids)]
-        return ConcatSQL(
-            JoinSQL(SQL_UNION_ALL, sql_queries),
-            SQL_ORDERBY,
-            JoinSQL(
-                SQL_COMMA, [ConcatSQL(quote_column(o), SQL_IS_NOT_NULL, SQL_COMMA, quote_column(o)) for o in ordering]
-            ),
-        )
+        ordering = list(flatten(
+            [
+                *(quote_column(f"o{n.id}_{oi}") for oi, ov in enumerate(n.order)),
+                *(quote_column(f"i{n.id}_{ii}") for ii, iv in enumerate(n.uids)),
+            ]
+            for n in done
+        ))
+        return ConcatSQL(JoinSQL(SQL_UNION_ALL, sql_queries), SQL_ORDERBY, JoinSQL(SQL_COMMA, ordering),)

@@ -12,14 +12,14 @@ from unittest import TestCase
 
 from mo_sql import sql_list
 from mo_sqlite import Sqlite, quote_column, ConcatSQL, SQL_SELECT, SQL_FROM
-from mo_sqlite.sql_script import SqlStep, SelectOne, SqlTree
+from mo_sqlite.expressions import Variable, SelectOp
+from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
+from mo_sqlite.sql_script import SqlStep, SqlTree
 
 whitespace = re.compile(r"\s+", re.MULTILINE)
 
 
 class TestBasic(TestCase):
-
-
     def test_one_nested_query(self):
         # FILL DATABASE WITH TWO TABLES, ONE WITH A FOREIGN KEY TO THE OTHER
         db = Sqlite()
@@ -30,35 +30,109 @@ class TestBasic(TestCase):
             t.execute("INSERT INTO people (name) VALUES ('joe')")
             t.execute("INSERT INTO people (name) VALUES ('jane')")
             # create table of some pets, with foreign key to people
-            t.execute(
-                "CREATE TABLE pets (id INTEGER PRIMARY KEY, name TEXT, _order INTEGER, owner INTEGER REFERENCES"
-                " people(id))"
-            )
+            t.execute("""CREATE TABLE pets (id INTEGER PRIMARY KEY, name TEXT, _order INTEGER, owner INTEGER)""")
             t.execute("INSERT INTO pets (name, _order, owner) VALUES ('fido', 0, 1)")
             t.execute("INSERT INTO pets (name, _order, owner) VALUES ('spot', 1, 1)")
             t.execute("INSERT INTO pets (name, _order, owner) VALUES ('fluffy', 0, 2)")
 
         people = SqlStep(
             None,
-            ConcatSQL(
-                SQL_SELECT, sql_list([quote_column("id"), quote_column("name")]), SQL_FROM, quote_column("people")
-            ),
-            [SelectOne("name", quote_column("name"))],
-            id=(quote_column("id"),),
+            SelectOp( Variable("people"), Variable("id"), Variable("name")),
+            [SqlAliasOp("name", Variable("name"))],
+            uids=(Variable("id"),),
             order=(),
         )
         pets = SqlStep(
             people,
-            ConcatSQL(
-                SQL_SELECT,
-                sql_list([quote_column("id"), quote_column("name"), quote_column("_order"), quote_column("owner")]),
-                SQL_FROM,
-                quote_column("pets"),
-            ),
-            [SelectOne("pets.$A.name", quote_column("name"))],
-            id=(quote_column("owner"), quote_column("id")),
-            order=(quote_column("_order"),),
+            SelectOp(Variable("pets"), Variable("id"), Variable("name"), Variable("_order"), Variable("owner")),
+            [SqlAliasOp("pets.$A.name", Variable("name"))],
+            uids=(Variable("owner"), Variable("id")),
+            order=(Variable("_order"),),
         )
 
         sql = SqlTree([pets]).to_sql()
-        self.assertEqual(whitespace.sub("", str(sql)), """SELECTi0_0,c0_0,NULLASo1_0,NULLASi1_0,NULLASi1_1,NULLASc1_0FROM(SELECTidASi0_0,nameASc0_0FROM(SELECTid,nameFROMpeople))ASt0UNIONALLSELECTi0_0,NULLASc0_0,o1_0,i1_0,i1_1,c1_0FROM(SELECTidASi0_0FROM(SELECTid,nameFROMpeople))ASt0LEFTJOIN(SELECT_orderASo1_0,ownerASi1_0,idASi1_1,nameASc1_0FROM(SELECTid,name,_order,ownerFROMpets))ASt1ONi1_0=i0_0ORDERBYo0_0ISNOTNULL,o0_0,o1_0ISNOTNULL,o1_0,o1_1ISNOTNULL,o1_1,o1_2ISNOTNULL,o1_2""")
+        result = db.query(sql)
+
+        expected = {
+            "meta": {"format": "table"},
+            "header": ["i0_0", "c0_0", "o1_0", "i1_0", "i1_1", "c1_0"],
+            "data": [
+                (1, "kyle", None, None, None, None),
+                (1, None, 0, 1, 1, "fido"),
+                (1, None, 1, 1, 2, "spot"),
+                (2, "joe", None, None, None, None),
+                (2, None, 0, 2, 3, "fluffy"),
+                (3, "jane", None, None, None, None),
+            ],
+        }
+        self.assertEqual(result, expected)
+
+    def test_sister_nested_query(self):
+        db = Sqlite()
+        with db.transaction() as t:
+            # create table of peopls
+            t.execute("CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT)")
+            t.execute("INSERT INTO people (name) VALUES ('kyle')")
+            t.execute("INSERT INTO people (name) VALUES ('joe')")
+            t.execute("INSERT INTO people (name) VALUES ('jane')")
+
+            # create table of some pets, with foreign key to people
+            t.execute("""CREATE TABLE pets (id INTEGER PRIMARY KEY, name TEXT, _order INTEGER, owner INTEGER)""")
+            t.execute("INSERT INTO pets (name, _order, owner) VALUES ('fido', 0, 1)")
+            t.execute("INSERT INTO pets (name, _order, owner) VALUES ('spot', 1, 1)")
+            t.execute("INSERT INTO pets (name, _order, owner) VALUES ('fluffy', 0, 2)")
+
+            # create table of albums with foreign key to people
+            t.execute("CREATE TABLE albums (id INTEGER PRIMARY KEY, cover TEXT, owner INTEGER)")
+            t.execute("INSERT INTO albums (cover, owner) VALUES ('dark side of the moon', 3)")
+            t.execute("INSERT INTO albums (cover, owner) VALUES ('thriller', 3)")
+            t.execute("INSERT INTO albums (cover, owner) VALUES ('huey lewis and the news', 3)")
+
+        people = SqlStep(
+            None,
+            SelectOp(Variable("people"), Variable("id"), Variable("name")),
+            [SqlAliasOp("name", Variable("name"))],
+            uids=(Variable("id"),),
+            order=(),
+        )
+        pets = SqlStep(
+            people,
+            SelectOp(Variable("pets"), Variable("id"), Variable("name"), Variable("_order"), Variable("owner")),
+            [SqlAliasOp("pets.$A.name", Variable("name"))],
+            uids=(Variable("owner"), Variable("id")),
+            order=(Variable("_order"),),
+        )
+        albums = SqlStep(
+            people,
+            ConcatSQL(
+                SQL_SELECT,
+                sql_list([Variable("id"), Variable("cover"), Variable("owner")]),
+                SQL_FROM,
+                Variable("albums"),
+            ),
+            [SqlAliasOp("albums.$A.cover", Variable("cover"))],
+            uids=(Variable("owner"), Variable("id")),
+            order=(),
+        )
+
+        sql = SqlTree([pets, albums]).to_sql()
+        result = db.query(sql)
+
+        expected = {
+            "meta": {"format": "table"},
+            "header": ["i0_0", "c0_0", "o1_0", "i1_0", "i1_1", "c1_0", "i2_0", "i2_1", "c2_0"],
+            "data": [
+                (1, "kyle", None, None, None, None, None, None, None),
+                (1, None, 0, 1, 1, "fido", None, None, None),
+                (1, None, 1, 1, 2, "spot", None, None, None),
+                (2, "joe", None, None, None, None, None, None, None),
+                (2, None, 0, 2, 3, "fluffy", None, None, None),
+                (3, "jane", None, None, None, None, None, None, None),
+                (3, None, None, None, None, None, 3, 1, "dark side of the moon"),
+                (3, None, None, None, None, None, 3, 2, "thriller"),
+                (3, None, None, None, None, None, 3, 3, "huey lewis and the news"),
+            ],
+        }
+        self.assertEqual(result, expected)
+
+

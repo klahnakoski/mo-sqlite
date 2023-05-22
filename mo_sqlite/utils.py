@@ -126,7 +126,7 @@ def sql_query(command):
         if command.where.eq:
             acc.append(sql_eq(**command.where.eq))
         else:
-            from jx_sqlite.expressions import SQLang
+            from mo_sqlite.expressions import SQLang
             from jx_base import jx_expression
 
             where = jx_expression(command.where).partial_eval(SQLang).to_sql[0].b

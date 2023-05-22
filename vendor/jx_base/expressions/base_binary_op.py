@@ -30,10 +30,6 @@ class BaseBinaryOp(Expression):
         Expression.__init__(self, lhs, rhs)
         self.lhs, self.rhs = lhs, rhs
 
-    @property
-    def name(self):
-        return self.op
-
     def __data__(self):
         if is_op(self.lhs, Variable) and is_literal(self.rhs):
             return {self.op: {self.lhs.var, self.rhs.value}}
