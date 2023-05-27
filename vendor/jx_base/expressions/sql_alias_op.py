@@ -29,3 +29,6 @@ class SqlAliasOp(Expression, SQL):
         if not is_op(other, SqlAliasOp):
             return False
         return self.name == other.name and self.value == other.value
+
+    def __repr__(self):
+        return f"SqlAliasOp({self.name}={self.value})"

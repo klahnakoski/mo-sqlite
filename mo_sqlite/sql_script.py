@@ -7,12 +7,14 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from dataclasses import dataclass
 from typing import List, Tuple
 
-from jx_base.expressions import Expression
+from jx_base.expressions import Expression, NULL
+from jx_base.expressions.sql_inner_join_op import SqlJoinOne
 from mo_future import flatten
-from mo_sqlite.expressions import SelectOp
+from mo_sqlite.expressions.select_op import SelectOp
+from mo_sqlite.expressions.sql_inner_join_op import SqlInnerJoinOp
+from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
 from mo_sqlite.expressions.sql_and_op import SqlAndOp
 from mo_sqlite.expressions.sql_eq_op import SqlEqOp
 from mo_sqlite.expressions.variable import Variable
@@ -21,32 +23,23 @@ from mo_sqlite.utils import (
     ConcatSQL,
     SQL_UNION_ALL,
     SQL_ORDERBY,
-    sql_iso,
-    SQL_ON,
-    SQL_SELECT,
-    SQL_FROM,
     SQL_COMMA,
     SQL,
-    SQL_NULL,
-    sql_list,
-    SQL_INNER_JOIN,
-    sql_alias,
-    quote_column,
 )
-
 
 
 class SqlStep:
     def __init__(self, parent, subquery, selects, uids, order):
         self.parent: SqlStep = parent  # THE PARENT STEP
+        self.subquery: Expression = subquery  # ASSUMED TO BE A SUB QUERY, INCLUDING THE id AND order COLUMNS
+        self.selects: Tuple[SqlAliasOp] = selects  # THE NAME/VALUE PAIRS TO SELECT FROM THE SUBQUERY
+        self.uids: Tuple[Expression] = uids  # USED FOR JOINING TO PARENT
+        self.order: Tuple[Expression] = order  # USED TO SORT THE FINAL RESULT
+
         self.nested_path = None  # THE SEQUENCE OF TABLES JOINED TO GET HERE
         self.id = None  # EACH subquery IN THE QUERY IS GIVEN AN ID
         self.start = None  # WHERE TO PLACE THE COLUMNS IN THE SELECT
         self.end = None  # THE END OF THE COLUMNS IN THE SELECT
-        self.subquery: SQL = subquery  # ASSUMED TO BE A SUB QUERY, INCLUDING THE id AND order COLUMNS
-        self.selects: SelectOp = selects # THE NAME/VALUE PAIRS TO SELECT FROM THE SUBQUERY
-        self.uids: Tuple[Expression] = uids  # USED FOR JOINING TO PARENT
-        self.order: Tuple[Expression] = order  # USED TO SORT THE FINAL RESULT
 
     def position(self, done, all_selects):
         """
@@ -78,18 +71,18 @@ class SqlStep:
         SQL TO PULL MINIMUM COLUMNS FOR LEFT JOINS
         """
         columns = [
-            *(sql_alias(ov, f"o{self.id}_{oi}") for oi, ov in enumerate(self.order)),
-            *(sql_alias(iv, f"i{self.id}_{ii}") for ii, iv, in enumerate(self.uids)),
+            *(SqlAliasOp(f"o{self.id}_{oi}", ov) for oi, ov in enumerate(self.order)),
+            *(SqlAliasOp(f"i{self.id}_{ii}", iv) for ii, iv, in enumerate(self.uids)),
         ]
         parent_end = self.parent.end if self.parent else 0
         start_of_values = self.start + len(self.order) + len(self.uids)
         return (
             [
-                *(sql_alias(SQL_NULL, s) for s in all_selects[parent_end : self.start]),
-                *(quote_column(s) for s in all_selects[self.start : start_of_values]),
-                *(sql_alias(SQL_NULL, s) for s in all_selects[start_of_values : self.end]),
+                *(SqlAliasOp(s, NULL) for s in all_selects[parent_end : self.start]),
+                *(Variable(s) for s in all_selects[self.start : start_of_values]),
+                *(SqlAliasOp(s, NULL) for s in all_selects[start_of_values : self.end]),
             ],
-            sql_alias(sql_iso(ConcatSQL(SQL_SELECT, sql_list(columns), SQL_FROM, sql_iso(self.subquery), )), f"t{self.id}", ),
+            SqlAliasOp(f"t{self.id}", SelectOp(self.subquery, *columns)),
         )
 
     def leaf_sql(self, all_selects):
@@ -97,18 +90,18 @@ class SqlStep:
         SQL TO PULL ALL COLUMNS FOR LEAF
         """
         columns = [
-            *(sql_alias(ov, f"o{self.id}_{oi}") for oi, ov in enumerate(self.order)),
-            *(sql_alias(iv, f"i{self.id}_{ii}") for ii, iv, in enumerate(self.uids)),
-            *(sql_alias(cv.value, f"c{self.id}_{ci}") for ci, cv in enumerate(self.selects)),
+            *(SqlAliasOp(f"o{self.id}_{oi}", ov) for oi, ov in enumerate(self.order)),
+            *(SqlAliasOp(f"i{self.id}_{ii}", iv) for ii, iv, in enumerate(self.uids)),
+            *(SqlAliasOp(f"c{self.id}_{ci}", cv.value) for ci, cv in enumerate(self.selects)),
         ]
         parent_end = self.parent.end if self.parent else 0
         return (
             [
-                *(sql_alias(SQL_NULL, s) for s in all_selects[parent_end : self.start]),
-                *(quote_column(s) for s in all_selects[self.start : self.end]),
-                *(sql_alias(SQL_NULL, s) for s in all_selects[self.end :]),
+                *(SqlAliasOp(s, NULL) for s in all_selects[parent_end : self.start]),
+                *(Variable(s) for s in all_selects[self.start : self.end]),
+                *(SqlAliasOp(s, NULL) for s in all_selects[self.end :]),
             ],
-            sql_alias(sql_iso(ConcatSQL(SQL_SELECT, sql_list(columns), SQL_FROM, sql_iso(self.subquery), )), f"t{self.id}", ),
+            SqlAliasOp(f"t{self.id}", SelectOp(self.subquery, *columns)),
         )
 
     def branch_sql(self, done: List, sql_queries: List[SQL], all_selects: List[str]) -> Tuple:
@@ -122,7 +115,7 @@ class SqlStep:
         if not self.parent:
             done.append(self)
             selects, leaf = self.leaf_sql(all_selects)
-            sql_queries.append(ConcatSQL(SQL_SELECT, JoinSQL(SQL_COMMA, selects), SQL_FROM, leaf))
+            sql_queries.append(SelectOp(leaf, *selects))
             return (self,)
 
         nested_path = self.parent.branch_sql(done, sql_queries, all_selects)
@@ -130,31 +123,34 @@ class SqlStep:
 
         # LEFT JOINS FROM ROOT TO LEAF
         sql_selects = []
-        sql_branch = [SQL_FROM]
+        sql_joins = []
 
-        selects, leaf = nested_path[0].node_sql(all_selects)
+        selects, frum = nested_path[0].node_sql(all_selects)
         sql_selects.extend(selects)
-        sql_branch.append(leaf)
         for step in nested_path[1:]:
-            sql_branch.append(SQL_INNER_JOIN)
             selects, leaf = step.node_sql(all_selects)
             sql_selects.extend(selects)
-            sql_branch.append(leaf)
-            sql_branch.append(SQL_ON)
-            sql_branch.append(SqlAndOp(*(
-                SqlEqOp(Variable(f"i{step.id}_{i}"), Variable(f"i{step.parent.id}_{i}"))
-                for i, _ in enumerate(step.parent.uids)
-            )))
-        sql_branch.append(SQL_INNER_JOIN)
+            sql_joins.append(SqlJoinOne(
+                leaf,
+                SqlAndOp(
+                    *(
+                        SqlEqOp(Variable(f"i{step.id}_{i}"), Variable(f"i{step.parent.id}_{i}"))
+                        for i, _ in enumerate(step.parent.uids)
+                    )
+                ),
+            ))
         selects, leaf = self.leaf_sql(all_selects)
         sql_selects.extend(selects)
-        sql_branch.append(leaf)
-        sql_branch.append(SQL_ON)
-        sql_branch.append(SqlAndOp(*(
-            SqlEqOp(Variable(f"i{self.id}_{i}"), Variable(f"i{self.parent.id}_{i}"))
-            for i, _ in enumerate(self.parent.uids)
-        )))
-        sql_queries.append(ConcatSQL(SQL_SELECT, sql_list(sql_selects), *sql_branch))
+        sql_joins.append(SqlJoinOne(
+            leaf,
+            SqlAndOp(
+                *(
+                    SqlEqOp(Variable(f"i{self.id}_{i}"), Variable(f"i{self.parent.id}_{i}"))
+                    for i, _ in enumerate(self.parent.uids)
+                )
+            ),
+        ))
+        sql_queries.append(SelectOp(SqlInnerJoinOp(frum, *sql_joins), *sql_selects))
         return nested_path + (self,)
 
 
@@ -175,8 +171,8 @@ class SqlTree:
 
         ordering = list(flatten(
             [
-                *(quote_column(f"o{n.id}_{oi}") for oi, ov in enumerate(n.order)),
-                *(quote_column(f"i{n.id}_{ii}") for ii, iv in enumerate(n.uids)),
+                *(Variable(f"o{n.id}_{oi}") for oi, ov in enumerate(n.order)),
+                *(Variable(f"i{n.id}_{ii}") for ii, iv in enumerate(n.uids)),
             ]
             for n in done
         ))

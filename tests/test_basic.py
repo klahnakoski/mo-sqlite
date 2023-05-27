@@ -10,15 +10,16 @@
 import re
 from unittest import TestCase
 
-from mo_sql import sql_list
-from mo_sqlite import Sqlite, quote_column, ConcatSQL, SQL_SELECT, SQL_FROM
+from mo_sqlite import Sqlite
 from mo_sqlite.expressions import Variable, SelectOp
 from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
 from mo_sqlite.sql_script import SqlStep, SqlTree
+from tests.utils import add_error_reporting
 
 whitespace = re.compile(r"\s+", re.MULTILINE)
 
 
+@add_error_reporting
 class TestBasic(TestCase):
     def test_one_nested_query(self):
         # FILL DATABASE WITH TWO TABLES, ONE WITH A FOREIGN KEY TO THE OTHER
@@ -104,12 +105,7 @@ class TestBasic(TestCase):
         )
         albums = SqlStep(
             people,
-            ConcatSQL(
-                SQL_SELECT,
-                sql_list([Variable("id"), Variable("cover"), Variable("owner")]),
-                SQL_FROM,
-                Variable("albums"),
-            ),
+            SelectOp(Variable("albums"), Variable("id"), Variable("cover"), Variable("owner")),
             [SqlAliasOp("albums.$A.cover", Variable("cover"))],
             uids=(Variable("owner"), Variable("id")),
             order=(),

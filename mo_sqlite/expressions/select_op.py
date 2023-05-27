@@ -19,7 +19,7 @@ class SelectOp(_SelectOp, SQL):
 
     def __init__(self, frum, *terms, **kwargs):
         terms = [SqlAliasOp(t.var, t) if isinstance(t, Variable) else t for t in terms]+ [SqlAliasOp(k, v) for k, v in kwargs.items()]
-        Expression.__init__(self, frum , *(t.value for t in terms))
+        Expression.__init__(self, frum, *(t.value for t in terms))
         self.frum = frum
         self.terms = terms
 

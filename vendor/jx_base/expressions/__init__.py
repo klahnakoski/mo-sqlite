@@ -99,6 +99,7 @@ from jx_base.expressions.sql_and_op import SqlAndOp
 from jx_base.expressions.sql_or_op import SqlOrOp
 from jx_base.expressions.sql_eq_op import SqlEqOp
 from jx_base.expressions.sql_alias_op import SqlAliasOp
+from jx_base.expressions.sql_inner_join_op import SqlInnerJoinOp
 from jx_base.expressions.sql_is_null_op import SqlIsNullOp
 from jx_base.expressions.sql_group_by_op import SqlGroupByOp
 from jx_base.expressions.sql_instr_op import SqlInstrOp
