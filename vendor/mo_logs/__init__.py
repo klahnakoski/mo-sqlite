@@ -10,9 +10,10 @@
 import os
 import sys
 from datetime import datetime
+from threading import current_thread
 
 from mo_dots import Data, coalesce, listwrap, unwraplist, dict_to_data, is_data, to_data
-from mo_future import is_text, text, STDOUT
+from mo_future import is_text, STDOUT
 from mo_imports import delay_import
 from mo_kwargs import override
 
@@ -23,17 +24,19 @@ from mo_logs.exceptions import (
     suppress_exception,
     format_trace,
     WARNING,
+    get_stacktrace,
 )
 from mo_logs.log_usingStream import StructuredLogger_usingStream
 from mo_logs.strings import CR, indent
 
-STACKTRACE = "\n{{trace_text|indent}}\n{{cause_text}}"
+STACKTRACE = "\n{trace_text|indent}\n{cause_text}"
 
 StructuredLogger_usingMulti = delay_import("mo_logs.log_usingMulti.StructuredLogger_usingMulti")
 StructuredLogger_usingThread = delay_import("mo_logs.log_usingThread.StructuredLogger_usingThread")
 
-_Thread = delay_import("mo_threads.Thread")
 startup_read_settings = delay_import("mo_logs.startup.read_settings")
+
+all_log_callers = {}
 
 
 class Log(object):
@@ -47,11 +50,20 @@ class Log(object):
     profiler = None  # simple pypy-friendly profiler
     error_mode = False  # prevent error loops
     extra = {}
+    static_template = True
 
     @classmethod
     @override("settings")
     def start(
-        cls, trace=False, cprofile=False, constants=None, logs=None, extra=None, app_name=None, settings=None,
+        cls,
+        trace=False,
+        cprofile=False,
+        constants=None,
+        logs=None,
+        extra=None,
+        app_name=None,
+        settings=None,
+        static_template=True,
     ):
         """
         RUN ME FIRST TO SETUP THE THREADED LOGGING
@@ -62,8 +74,9 @@ class Log(object):
                          USE THE LONG FORM TO SET THE FILENAME {"enabled": True, "filename": "cprofile.tab"}
         :param constants: UPDATE MODULE CONSTANTS AT STARTUP (PRIMARILY INTENDED TO CHANGE DEBUG STATE)
         :param logs: LIST OF PARAMETERS FOR LOGGER(S)
+        :param extra: ADDITIONAL DATA TO BE INCLUDED IN EVERY LOG LINE
         :param app_name: GIVE THIS APP A NAME, AND RETURN A CONTEXT MANAGER
-        :param settings: ALL THE ABOVE PARAMTERS
+        :param settings: ALL THE ABOVE PARAMETERS
         :return:
         """
         if app_name:
@@ -73,6 +86,7 @@ class Log(object):
 
         cls.settings = settings
         cls.trace = trace
+        cls.static_template = static_template
 
         # ENABLE CPROFILE
         if cprofile is False:
@@ -125,7 +139,7 @@ class Log(object):
         clazz = _known_loggers.get(log_type.lower())
         if clazz:
             return clazz(settings)
-        logger.error("Log type of {{config|json}} is not recognized", config=settings)
+        logger.error("Log type of {config|json} is not recognized", config=settings)
 
     @classmethod
     def _add_log(cls, log):
@@ -142,11 +156,12 @@ class Log(object):
             old_log.stop()
 
     @classmethod
-    def note(cls, template, default_params={}, *, stack_depth=0, **more_params):
+    def note(cls, template, default_params={}, *, stack_depth=0, static_template=None, **more_params):
         """
         :param template: *string* human readable string with placeholders for parameters
         :param default_params: *dict* parameters to fill in template
         :param stack_depth:  *int* how many calls you want popped off the stack to report the *true* caller
+        :param static_template: *bool* if True, then the template is static, and optimization can be done
         :param more_params: *any more parameters (which will overwrite default_params)
         :return:
         """
@@ -162,12 +177,13 @@ class Log(object):
                 timestamp=timestamp,
             ),
             stack_depth + 1,
+            cls.static_template if static_template is None else static_template,
         )
 
     info = note
 
     @classmethod
-    def alarm(cls, template, default_params={}, *, stack_depth=0, **more_params):
+    def alarm(cls, template, default_params={}, *, stack_depth=0, static_template=None, **more_params):
         """
         :param template: *string* human readable string with placeholders for parameters
         :param default_params: *dict* parameters to fill in template
@@ -185,6 +201,7 @@ class Log(object):
                 timestamp=timestamp,
             ),
             stack_depth + 1,
+            cls.static_template if static_template is None else static_template,
         )
 
     alert = alarm
@@ -199,7 +216,8 @@ class Log(object):
         stack_depth=0,  # how many calls you want popped off the stack to report the *true* caller
         log_severity=WARNING,  # set the logging severity
         exc_info=None,  # used by python logging as the cause
-        **more_params  # any more parameters (which will overwrite default_params)
+        static_template=None,
+        **more_params,  # any more parameters (which will overwrite default_params)
     ):
         if exc_info is True:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -218,7 +236,7 @@ class Log(object):
         trace = exceptions.get_stacktrace(stack_depth + 1)
 
         e = Except(severity=log_severity, template=template, params=params, cause=cause, trace=trace,)
-        Log._annotate(e, stack_depth + 1)
+        Log._annotate(e, stack_depth + 1, cls.static_template if static_template is None else static_template)
 
     warn = warning
 
@@ -231,7 +249,7 @@ class Log(object):
         cause=None,  # pausible cause
         stack_depth=0,
         exc_info=None,  # used by python logging as the cause
-        **more_params
+        **more_params,
     ):
         """
         raise an exception with a trace for the cause too
@@ -264,18 +282,20 @@ class Log(object):
         raise_from_none(e)
 
     @classmethod
-    def _annotate(cls, item, stack_depth):
+    def _annotate(cls, item, stack_depth, static_template):
         """
         :param item:  A LogItem THE TYPE OF MESSAGE
         :param stack_depth: FOR TRACKING WHAT LINE THIS CAME FROM
         :return:
         """
-        template = item.template
-        template = strings.limit(template, 10000)
-        template = template.replace("{{", "{{params.")
+        given_template = item.template
+        given_template = strings.limit(given_template, 10000)
+        param_template = "".join(
+            f"{text}{{params.{code}}}" if code else text for text, code in strings.parse_template(given_template)
+        )
 
         if isinstance(item, Except):
-            template = "{{severity}}: " + template + STACKTRACE
+            param_template = "{severity}: " + param_template + STACKTRACE
             temp = item.__data__()
             temp.trace_text = item.trace_text
             temp.cause_text = item.cause_text
@@ -283,28 +303,39 @@ class Log(object):
         else:
             item = item.__data__()
 
-        if not template.startswith(CR) and CR in template:
-            template = CR + template
+        if not param_template.startswith(CR) and CR in param_template:
+            param_template = CR + param_template
 
         if cls.trace:
             item.machine = machine_metadata()
             log_format = item.template = (
-                "{{machine.name}} (pid {{machine.pid}}) - {{timestamp|datetime}} -"
-                ' {{thread.name}} - "{{location.file}}:{{location.line}}" -'
-                " ({{location.method}}) - "
-                + template
+                "{machine.name} (pid {machine.pid}) - {timestamp|datetime} -"
+                ' {thread.name} - ""{location.file}:{location.line}"" -'
+                " ({location.method}) - "
+                + param_template
             )
             f = sys._getframe(stack_depth + 1)
             item.location = {
                 "line": f.f_lineno,
-                "file": text(f.f_code.co_filename),
-                "method": text(f.f_code.co_name),
+                "file": f.f_code.co_filename,
+                "method": f.f_code.co_name,
             }
-            thread = _Thread.current()
-            item.thread = {"name": thread.name, "id": thread.id}
+            if static_template:
+                last_caller_loc = (f.f_code.co_filename, f.f_lineno)
+                prev_template = all_log_callers.get(last_caller_loc)
+                if prev_template != given_template:
+                    if prev_template:
+                        raise Except(
+                            template="Expecting logger call to be static: was {a|quote} now {b|quote}",
+                            params={"a": prev_template, "b": given_template},
+                            trace=get_stacktrace(stack_depth + 1),
+                        )
+                    all_log_callers[last_caller_loc] = given_template
+            thread = current_thread()
+            item.thread = {"name": thread.name, "id": thread.ident}
         else:
-            log_format = template
-            # log_format = item.template = "{{timestamp|datetime}} - " + template
+            log_format = param_template
+            # log_format = item.template = "{timestamp|datetime} - " + template
 
         item.params = {**cls.extra, **item.params}
         cls.main_log.write(log_format, item)
@@ -336,7 +367,7 @@ class LoggingContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_val:
             logger.warning(
-                "Problem with {{name}}! Shutting down.", name=self.app_name, cause=exc_val,
+                "Problem with {name}! Shutting down.", name=self.app_name, cause=exc_val,
             )
         Log.stop()
 
@@ -358,9 +389,9 @@ def machine_metadata():
 
     _machine_metadata = dict_to_data({
         "pid": os.getpid(),
-        "python": text(platform.python_implementation()),
-        "os": text(platform.system() + platform.release()).strip(),
-        "name": text(platform.node()),
+        "python": platform.python_implementation(),
+        "os": (platform.system() + platform.release()).strip(),
+        "name": platform.node(),
     })
     return _machine_metadata
 

@@ -29,7 +29,7 @@ class SqlSelectAllFromOp(Expression):
         return {c.es_column: str(JxType(c.type)) for c in self.table.schema.columns}
 
     def __data__(self):
-        return {"sql.select_all_from": [self.lhs.__data__(), self.rhs.__data__()]}
+        return {"sql.select_all_from": self.table.__data__()}
 
     def missing(self, lang):
         return FALSE

@@ -7,21 +7,15 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from mo_imports import DelayedValue
 from jx_base.expressions.expression import Expression
-from mo_future import first
 from jx_base.expressions.null_op import NULL
-from mo_logs import Log
+from mo_future import first
+from mo_imports import DelayedValue
 
 
 class AggregateOp(Expression):
-    def __init__(self, frum, op):
-        Expression.__init__(self, frum)
-        if op not in canonical_aggregates:
-            Log.error(f"{op} is not a known aggregate")
-
-        self.frum = frum
-        self.op = canonical_aggregates[op]
+    def __init__(self, frum, op, **options):
+        logger.error("general aggregate not supported")
 
     def apply(self, container):
         source = self.frum.apply(container)

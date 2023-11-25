@@ -23,6 +23,7 @@ INFO = "INFO"
 NOTE = "NOTE"
 TOO_DEEP = 50  # MAXIMUM DEPTH OF CAUSAL CHAIN
 
+
 class LogItem(object):
     def __init__(self, severity, template, params, timestamp):
         self.severity = severity
@@ -143,7 +144,7 @@ class Except(Exception):
                 else:
                     cause_strings.append(str(c))
             except Exception as cause:
-                sys.stderr(f"Problem serializing cause {cause}")
+                sys.stderr.write(f"Problem serializing cause {cause}")
 
         return "caused by\n\t" + "and caused by\n\t".join(cause_strings)
 
@@ -211,7 +212,7 @@ def _parse_traceback(tb):
 
 
 def format_trace(tbs, start=0):
-    return "".join(expand_template('File "{{file}}", line {{line}}, in {{method}}\n', d) for d in tbs[start::])
+    return "".join(expand_template('File ""{file}"", line {line}, in {method}\n', d) for d in tbs[start::])
 
 
 class Suppress(object):

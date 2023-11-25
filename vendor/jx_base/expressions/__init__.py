@@ -112,10 +112,12 @@ from jx_base.expressions.sql_substr_op import SqlSubstrOp
 from jx_base.expressions.sub_op import SubOp
 from jx_base.expressions.sum_op import SumOp
 from jx_base.expressions.suffix_op import SuffixOp
-from jx_base.expressions.to_array_op import ToArrayOp
+from jx_base.expressions.array_of_op import ArrayOfOp
 from jx_base.expressions.to_boolean_op import ToBooleanOp
+from jx_base.expressions.to_array_op import ToArrayOp
 from jx_base.expressions.to_number_op import ToNumberOp
 from jx_base.expressions.to_text_op import ToTextOp
+from jx_base.expressions.to_value_op import ToValueOp
 from jx_base.expressions.true_op import TrueOp, TRUE
 from jx_base.expressions.tuple_op import TupleOp
 from jx_base.expressions.union_op import UnionOp
@@ -130,7 +132,7 @@ set_default(
         "add": AddOp,
         "aggregate": AggregateOp,
         "and": AndOp,
-        "array": ToArrayOp,
+        "array": ArrayOfOp,
         "avg": AvgOp,
         "basic.add": BasicAddOp,
         "basic.mul": BasicMulOp,
@@ -204,6 +206,7 @@ set_default(
         "script": ScriptOp,
         "select": SelectOp,
         "split": SplitOp,
+        "to_array": ToArrayOp,
         "to_text": ToTextOp,
         "text": ToTextOp,
         "suffix": SuffixOp,
@@ -227,3 +230,8 @@ register_literal(FalseOp)
 register_literal(TrueOp)
 register_literal(DateOp)
 register_literal(Literal)
+
+
+for op, v in operators.items():
+    if v.lang == None:
+        logger.warning(f"Operator {op} has no language defined")

@@ -38,6 +38,7 @@ from jx_base.language import is_op
 from jx_base.models.container import Container
 from jx_base.utils import is_variable_name
 from mo_json import union_type
+from jx_base.expressions.aggregate_op import canonical_aggregates
 
 
 @dataclass
@@ -74,23 +75,25 @@ class SelectOp(Expression):
             elif is_text(t):
                 if not is_variable_name(t):
                     Log.error("expecting {{value}} a simple dot-delimited path name", value=t)
-                terms.append({"name": t, "value": _jx_expression(t, cls.lang)})
+                terms.append(SelectOne(t, _jx_expression(t, cls.lang)))
             elif t.aggregate:
                 # AGGREGATES ARE INSERTED INTO THE CALL CHAIN
                 if t.value == None:
                     Log.error("expecting select parameters to have name and value properties")
-                elif t.name == None:
+                options = {k: v for k, v in t.items() if k not in ("name", "value", "aggregate")}
+                frum = FromOp(_jx_expression(t.value, cls.lang))
+                agg = canonical_aggregates[t.aggregate](frum, **options)
+
+                if t.name == None:
                     if is_text(t.value):
                         if not is_variable_name(t.value):
-                            Log.error(
-                                "expecting {{value}} a simple dot-delimited path name", value=t.value,
-                            )
+                            Log.error("expecting {{value}} a simple dot-delimited path name", value=t.value)
                         else:
-                            terms.append(SelectOne(t.value,AggregateOp(FromOp(_jx_expression(t.value, cls.lang)), t.aggregate)))
+                            terms.append(SelectOne(t.value, agg))
                     else:
                         Log.error("expecting a name property")
                 else:
-                    terms.append(SelectOne(t.name, AggregateOp(FromOp(jx_expression(t.value)), t.aggregate)))
+                    terms.append(SelectOne(t.name, agg))
             elif t.name == None:
                 if t.value == None:
                     Log.error("expecting select parameters to have name and value properties")
@@ -121,13 +124,21 @@ class SelectOp(Expression):
             if expr is NULL:
                 continue
             elif is_op(expr, SelectOp):
-                for child_name, child_value in expr.terms:
-                    new_terms.append(SelectOne(concat_field(name, child_name), child_value,))
+                for child in expr.terms:
+                    new_terms.append(SelectOne(concat_field(name, child.name), child.value))
             else:
                 new_terms.append(SelectOne(name, new_expr))
 
         if diff:
-            return lang.SelectOp(self.frum.partial_eval(lang), *new_terms)
+            frum = self.frum.partial_eval(lang)
+            if (
+                len(new_terms) == 1
+                and new_terms[0].name == "."
+                and is_op(new_terms[0].value, Variable)
+                and new_terms[0].value.var == "row"
+            ):
+                return frum
+            return lang.SelectOp(frum, *new_terms)
         else:
             return lang.SelectOp(self.frum.partial_eval(lang), *self.terms)
 

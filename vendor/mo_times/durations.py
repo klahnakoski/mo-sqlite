@@ -14,10 +14,8 @@ import re
 
 from mo_dots import get_module, dict_to_data
 from mo_future import is_text, text
-from mo_imports import delay_import, expect
+from mo_imports import delay_import
 from mo_math import MIN, is_nan, is_number, abs, floor, round
-
-from mo_times.vendor.dateutil.relativedelta import relativedelta
 
 Date = delay_import("mo_times.Date")
 Log = delay_import("mo_logs.Log")
@@ -50,7 +48,10 @@ class Duration(object):
             return None
         else:
             from mo_logs import Log
-            Log.error("Do not know type of object (" + get_module("mo_json").value2json(value) + ")of to make a Duration")
+
+            Log.error(
+                "Do not know type of object (" + get_module("mo_json").value2json(value) + ")of to make a Duration"
+            )
 
     @staticmethod
     def range(start, stop, step):
@@ -103,7 +104,6 @@ class Duration(object):
         output.month = -self.month
         return output
 
-
     def __rmul__(self, amount):
         amount = float(amount)
         output = Duration(0)
@@ -128,6 +128,7 @@ class Duration(object):
                     r = r - (self.month * MILLI_VALUES.month)
                     if r >= MILLI_VALUES.day * 31:
                         from mo_logs import Log
+
                         Log.error("Do not know how to handle")
                 r = MIN([29 / 30, (r + tod) / (MILLI_VALUES.day * 30)])
 
@@ -162,7 +163,8 @@ class Duration(object):
             output.month = time.month - self.month
             return output
         else:
-            return time - relativedelta(months=self.month, seconds=self.milli/1000)
+            # ASSUME time CAN BE CONVERTED TO A Date
+            return Date(time) - self
 
     def __lt__(self, other):
         if other == None:
@@ -192,6 +194,7 @@ class Duration(object):
     def floor(self, interval=None):
         if not isinstance(interval, Duration):
             from mo_logs import Log
+
             Log.error("Expecting an interval as a Duration object")
 
         output = Duration(0)
@@ -220,6 +223,7 @@ class Duration(object):
     def milli(self, value):
         if not isinstance(value, float):
             from mo_logs import Log
+
             Log.error("not allowed")
         self._milli = value
 
@@ -240,8 +244,8 @@ class Duration(object):
             return "zero"
 
         output = ""
-        rest = (self.milli - (MILLI_VALUES.month * self.month)) # DO NOT INCLUDE THE MONTH'S MILLIS
-        isNegative = (rest < 0)
+        rest = self.milli - (MILLI_VALUES.month * self.month)  # DO NOT INCLUDE THE MONTH'S MILLIS
+        isNegative = rest < 0
         rest = abs(rest)
 
         # MILLI
@@ -302,10 +306,9 @@ class Duration(object):
 
         if output[0] == "+":
             output = output[1::]
-        if output[0] == '1' and not is_number(output[1]):
+        if output[0] == "1" and not is_number(output[1]):
             output = output[1::]
         return output
-
 
     def format(self, interval, decimal):
         return self.round(Duration(interval), decimal) + interval
@@ -328,10 +331,12 @@ def _string2Duration(text):
 
     if MILLI_VALUES[interval] == None:
         from mo_logs import Log
+
         Log.error(
-            "{{interval|quote}} in {{text|quote}} is not a recognized duration type (did you use the pural form by mistake?",
+            "{{interval|quote}} in {{text|quote}} is not a recognized duration type (did you use the pural form by"
+            " mistake?",
             interval=interval,
-            text=text
+            text=text,
         )
 
     output = Duration(0)
@@ -367,7 +372,7 @@ MILLI_VALUES = dict_to_data({
     "minute": float(60 * 1000),
     "second": float(1000),
     "milli": float(1),
-    "zero": float(0)
+    "zero": float(0),
 })
 
 MONTH_VALUES = dict_to_data({
@@ -379,7 +384,7 @@ MONTH_VALUES = dict_to_data({
     "hour": 0,
     "minute": 0,
     "second": 0,
-    "milli": 0
+    "milli": 0,
 })
 
 # A REAL MONTH IS LARGER THAN THE CANONICAL MONTH
@@ -390,10 +395,7 @@ def compare(a, b):
     return a.milli - b.milli
 
 
-DOMAIN = {
-    "type": "duration",
-    "compare": compare
-}
+DOMAIN = {"type": "duration", "compare": compare}
 
 ZERO = Duration(0)
 SECOND = Duration("second")
@@ -426,5 +428,5 @@ COMMON_INTERVALS = [
     Duration("2month"),
     Duration("quarter"),
     Duration("6month"),
-    Duration("year")
+    Duration("year"),
 ]

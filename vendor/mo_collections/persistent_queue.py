@@ -19,7 +19,7 @@ from mo_logs.exceptions import suppress_exception
 from mo_math import randoms
 from mo_threads import Lock, Signal, THREAD_STOP
 
-DEBUG = True
+DEBUG = False
 
 
 class PersistentQueue(object):

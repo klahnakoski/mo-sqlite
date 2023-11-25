@@ -1,5 +1,3 @@
-from mo_logs import logger
-
 from jx_base import jx_expression
 from jx_base.expressions import (
     Expression,
@@ -27,13 +25,14 @@ from jx_base.expressions import (
     DivOp,
     MulOp,
     NotOp,
-    ToArrayOp,
+    ToArrayOp, ToValueOp, SumOp,
 )
 from jx_python.expressions import Python, PythonFunction
 from jx_python.streams.expression_compiler import compile_expression
 from jx_python.streams.inspects import is_function
 from jx_python.streams.typers import Typer
 from mo_json import JX_ANY
+from mo_logs import logger
 
 Any = Typer(python_type=JX_ANY)
 
@@ -62,7 +61,7 @@ class ExpressionFactory:
         return ExpressionFactory(ToValueOp(self.expr))
 
     def sum(self):
-        return ExpressionFactory(AddOp(self.expr, nulls=True))
+        return ExpressionFactory(SumOp(self.expr))
 
     def __getattr__(self, item):
         return ExpressionFactory(GetOp(self.expr, Literal(item)))

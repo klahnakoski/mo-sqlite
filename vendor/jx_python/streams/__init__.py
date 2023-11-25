@@ -15,9 +15,9 @@ from jx_base.expressions import (
     Variable,
     FilterOp,
     SelectOp,
-    ToArrayOp,
+    ArrayOfOp,
     LimitOp,
-    GroupOp,
+    GroupOp, ToArrayOp,
 )
 from jx_base.expressions.select_op import SelectOne
 from jx_base.language import value_compare
@@ -68,11 +68,12 @@ class Stream:
     def map(self, accessor):
         if isinstance(accessor, dict):
             fact = ExpressionFactory(SelectOp(
-                self.factory.expr, tuple(SelectOne(n, factory(v).expr) for n, v in to_data(accessor).leaves())
+                self.factory.expr,
+                *(SelectOne(n, factory(v).expr) for n, v in to_data(accessor).leaves())
             ))
         else:
             accessor = factory(accessor)
-            fact = ExpressionFactory(SelectOp(self.factory.expr, (SelectOne(".", accessor.expr),)))
+            fact = ExpressionFactory(SelectOp(self.factory.expr, SelectOne(".", accessor.expr)))
         return Stream(self.values, fact)
 
     def filter(self, pred):
@@ -101,7 +102,7 @@ class Stream:
     ###########################################################################
     def to_list(self):
         func = ExpressionFactory(ToArrayOp(self.factory.expr)).build()
-        return detype(func(entype(self.values)))
+        return detype(func(self.values))
 
     def to_value(self):
         func = self.factory.build()
@@ -120,7 +121,7 @@ class Stream:
 
 
 def stream(values):
-    return Stream(values, ExpressionFactory(SelectOp(ToArrayOp(it.expr), (SelectOne(".", Variable(".")),))))
+    return Stream(values, ExpressionFactory(SelectOp(ToArrayOp(it.expr), SelectOne(".", Variable(".")))))
 
 
 ANNOTATIONS = {

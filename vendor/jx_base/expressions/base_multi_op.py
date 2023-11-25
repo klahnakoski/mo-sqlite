@@ -11,7 +11,6 @@ from typing import Tuple
 
 from jx_base.expressions._utils import builtin_ops, operators
 from jx_base.expressions.expression import Expression
-from jx_base.expressions.false_op import FALSE
 from jx_base.expressions.literal import Literal, ZERO, ONE, is_literal
 from jx_base.expressions.true_op import TRUE
 from mo_imports import expect
@@ -49,15 +48,9 @@ class BaseMultiOp(Expression):
 
     def missing(self, lang):
         if self.decisive:
-            if self.default is NULL:
-                return AndOp(*(t.missing(lang) for t in self.terms))
-            else:
-                return TRUE
+            return AndOp(*(t.missing(lang) for t in self.terms))
         else:
-            if self.default is NULL:
-                return OrOp(*(t.missing(lang) for t in self.terms))
-            else:
-                return FALSE
+            return OrOp(*(t.missing(lang) for t in self.terms))
 
     def exists(self):
         if self.decisive:
@@ -82,10 +75,9 @@ class BaseMultiOp(Expression):
 
         lang = self.lang
         if len(terms) == 0:
-            if literal_acc == None:
-                return self.default.partial_eval(lang)
-            else:
-                return Literal(literal_acc)
+            return Literal(literal_acc)
+        elif len(terms) == 1 and literal_acc is None:
+            return terms[0]
         elif self.decisive:
             # DECISIVE
             if literal_acc is not None:
@@ -93,10 +85,9 @@ class BaseMultiOp(Expression):
 
             output = WhenOp(
                 AndOp(*(t.missing(lang) for t in terms)),
-                then=self.default,
-                **{"else": operators["basic." + self.op]([
+                **{"else": operators["basic." + self.op](*(
                     CoalesceOp(t, _jx_identity.get(self.op, NULL)) for t in terms
-                ])}
+                ))}
             ).partial_eval(lang)
         else:
             # CONSERVATIVE
@@ -105,7 +96,6 @@ class BaseMultiOp(Expression):
 
             output = WhenOp(
                 OrOp(*(t.missing(lang) for t in terms)),
-                then=self.default,
                 **{"else": operators["basic." + self.op](terms)}
             ).partial_eval(lang)
 

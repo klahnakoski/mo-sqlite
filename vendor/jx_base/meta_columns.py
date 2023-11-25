@@ -397,5 +397,4 @@ def _merge_python_type(A, B):
     else:
         return output.__name__
 
-
 export("jx_base.expressions.query_op", Column)

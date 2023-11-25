@@ -45,10 +45,14 @@ class Variable(Expression):
 
     def __call__(self, row, rownum=None, rows=None):
         path = split_field(self.var)
-        for p in path:
-            row = row.get(p)
-            if row is None:
-                return None
+        for step in path:
+            try:
+                row = getattr(row, step)
+            except Exception:
+                try:
+                    row = row[step]
+                except Exception:
+                    return None
         if is_sequence(row) and len(row) == 1:
             return row[0]
         return row
@@ -172,7 +176,7 @@ def get_variable(expr):
     elif is_op(expr, GetOp) and is_op(expr.frum, Variable) and expr.frum.var=="row" and all(is_op(o, Literal) for o in expr.offsets):
         return Variable(join_field(o.value for o in expr.offsets))
     else:
-        expr
+        return expr
 
 
 IDENTITY = Variable(".")
