@@ -18,7 +18,7 @@
                     "mo-dots",            "mo-files",           "mo-future",
                  "mo-imports",             "mo-json",           "mo-kwargs",
                     "mo-logs",             "mo-math", "mo-sql==4.492.24021",
-                 "mo-threads",            "mo-times"
+        "mo-sql==4.492.24021",          "mo-threads",            "mo-times"
     ],
     "license": "MPL 2.0",
     "long_description": {
