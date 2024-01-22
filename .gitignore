@@ -2,3 +2,6 @@
 *.iml
 .svn
 __pycache__
+*.egg-info
+/build
+setup.py
