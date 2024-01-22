@@ -348,7 +348,8 @@ class Sqlite(DB):
             self.closed = True
             self.debug and Log.note("Database is closed")
             self.db.close()
-            del known_databases[self.filename]
+            if self.filename:
+                del known_databases[self.filename]
 
     def _process_command_item(self, command_item):
         query, result, signal, trace, transaction = command_item

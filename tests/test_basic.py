@@ -14,6 +14,7 @@ from mo_sqlite import Sqlite
 from mo_sqlite.expressions import Variable, SelectOp
 from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
 from mo_sqlite.sql_script import SqlStep, SqlTree
+from mo_threads import stop_main_thread
 from tests.utils import add_error_reporting
 
 whitespace = re.compile(r"\s+", re.MULTILINE)
@@ -21,6 +22,12 @@ whitespace = re.compile(r"\s+", re.MULTILINE)
 
 @add_error_reporting
 class TestBasic(TestCase):
+
+
+    @classmethod
+    def tearDownClass(cls):
+        stop_main_thread()
+
     def test_one_nested_query(self):
         # FILL DATABASE WITH TWO TABLES, ONE WITH A FOREIGN KEY TO THE OTHER
         db = Sqlite()

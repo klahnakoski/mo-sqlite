@@ -7,6 +7,7 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
+
 from jx_base.expressions import SqlInnerJoinOp as _SqlInnerJoinOp
 from mo_sqlite.utils import SQL, SQL_INNER_JOIN, SQL_ON
 

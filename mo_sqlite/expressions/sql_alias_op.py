@@ -7,12 +7,16 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
+from mo_sql import SQL_OP, SQL_CP
+
 from jx_base.expressions import SqlAliasOp as _SqlAliasOp
 from mo_sqlite import SQL, SQL_AS, quote_column
 
 
 class SqlAliasOp(_SqlAliasOp, SQL):
     def __iter__(self):
+        yield from SQL_OP
         yield from self.value
+        yield from SQL_CP
         yield from SQL_AS
         yield from quote_column(self.name)
