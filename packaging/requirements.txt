@@ -9,3 +9,5 @@ mo-math
 mo-sql
 mo-times
 mo-threads
+mo-sql
+jx-python

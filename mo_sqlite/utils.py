@@ -8,14 +8,14 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 import re
-from collections import Mapping, namedtuple
+from collections import namedtuple
 
 from mo_dots import coalesce, listwrap, to_data
+from mo_future import Mapping
 from mo_logs import logger
 from mo_logs.strings import quote
 from mo_sql import *
 from mo_times import Date, Duration
-
 
 TYPE_CHECK = True
 
