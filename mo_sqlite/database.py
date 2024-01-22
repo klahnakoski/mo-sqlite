@@ -42,29 +42,6 @@ _upgraded = False
 known_databases = {}
 
 
-def _upgrade():
-    try:
-        Log.note("sqlite not upgraded")
-        # return
-        #
-        # import sys
-        # import platform
-        # if "windows" in platform.system().lower():
-        #     original_dll = File.new_instance(sys.exec_prefix, "dlls/sqlite3.dll")
-        #     if platform.architecture()[0]=='32bit':
-        #         source_dll = File("jx-sqlite/vendor/sqlite/sqlite3_32.dll")
-        #     else:
-        #         source_dll = File("jx-sqlite/vendor/sqlite/sqlite3_64.dll")
-        #
-        #     if not all(a == b for a, b in zip_longest(source_dll.read_bytes(), original_dll.read_bytes())):
-        #         original_dll.backup()
-        #         File.copy(source_dll, original_dll)
-        # else:
-        #     pass
-    except Exception as e:
-        Log.warning("could not upgrade python's sqlite", cause=e)
-
-
 class Sqlite(DB):
     """
     Allows multi-threaded access
@@ -136,7 +113,7 @@ class Sqlite(DB):
         self.too_long = None
         self.delayed_queries = []
         self.delayed_transactions = []
-        self.worker = Thread.run("sqlite db thread", self._worker, parent_thread=self)
+        self.worker = Thread.run("sqlite db thread", self._worker, parent_thread=None)
 
         self.debug and Log.note(
             "Sqlite version {{version}}", version=self.query("select sqlite_version()").data[0][0],
@@ -160,6 +137,9 @@ class Sqlite(DB):
                 return percentile(self.acc, self.percentile)
 
         con.create_aggregate("percentile", 2, Percentile)
+
+    def add_child(self, child):
+        pass
 
     def transaction(self):
         thread = Thread.current()

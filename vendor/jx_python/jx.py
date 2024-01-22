@@ -295,7 +295,7 @@ def select(data, field_name):
     return list with values from field_name
     """
     if isinstance(data, Cube):
-        return data._select(_normalize_selects(data, field_name))
+        return data._select(_normalize_selects(data, field_name, "list"))
 
     if isinstance(data, PartFlatList):
         return data.select(field_name)
@@ -1096,9 +1096,3 @@ def reverse(vals):
 def countdown(vals):
     remaining = len(vals) - 1
     return [(remaining - i, v) for i, v in enumerate(vals)]
-
-
-from jx_python.lists.aggs import is_aggs, list_aggs
-
-
-export("jx_python.containers.list", "jx")

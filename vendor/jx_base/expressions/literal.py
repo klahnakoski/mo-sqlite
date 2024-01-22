@@ -15,15 +15,14 @@ from mo_future import is_text
 from mo_imports import expect, export
 from mo_json import value2json, value_to_jx_type
 
-DateOp, FALSE, TRUE, NULL = expect("DateOp", "FALSE", "TRUE", "NULL")
+(DateOp,
+ FALSE, TRUE, NULL) = expect("DateOp", "FALSE", "TRUE", "NULL")
 
 
 class Literal(Expression):
     """
     A literal JSON document
     """
-
-    op = "literal"
 
     def __new__(cls, term):
         if term == None:
@@ -106,7 +105,7 @@ class Literal(Expression):
         return self.json
 
     @property
-    def type(self):
+    def jx_type(self):
         return value_to_jx_type(self._value)
 
     def partial_eval(self, lang):

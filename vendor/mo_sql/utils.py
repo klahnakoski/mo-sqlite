@@ -59,7 +59,7 @@ def untyped_column(column_name):
     :param column_name:  DATABASE COLUMN NAME
     :return: (NAME, TYPE) PAIR
     """
-    if "$" in column_name:
+    if SQL_KEY_PREFIX in column_name:
         path = split_field(column_name)
         if path[-1] in SQL_KEYS:
             return join_field([p for p in path[:-1] if p != SQL_ARRAY_KEY]), path[-1][1:]
@@ -125,6 +125,7 @@ SQL_KEYS = [
     SQL_ARRAY_KEY
 ]
 
+
 json_type_to_sql_type_key = {
     IS_NULL: SQL_IS_NULL_KEY,
     BOOLEAN: SQL_BOOLEAN_KEY,
@@ -134,7 +135,14 @@ json_type_to_sql_type_key = {
     STRING: SQL_STRING_KEY,
     OBJECT: SQL_OBJECT_KEY,
     ARRAY: SQL_ARRAY_KEY,
+    JX_IS_NULL: SQL_IS_NULL_KEY,
+    JX_BOOLEAN: SQL_BOOLEAN_KEY,
+    JX_NUMBER: SQL_NUMBER_KEY,
+    JX_TIME: SQL_TIME_KEY,
+    JX_INTERVAL: SQL_INTERVAL_KEY,
+    JX_TEXT: SQL_STRING_KEY,
 }
+
 
 sql_type_key_to_json_type = {
     None: None,

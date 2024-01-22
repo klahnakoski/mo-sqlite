@@ -15,7 +15,7 @@ from datetime import datetime
 from decimal import Decimal
 from math import isnan
 
-
+from jx_base.utils import enlist
 from mo_dots import Data, data_types, startswith_field, null_types
 from mo_dots.lists import list_types, is_many
 from mo_future import (

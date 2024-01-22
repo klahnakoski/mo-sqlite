@@ -69,7 +69,7 @@ class Typer:
         return f"Typer(class={self.python_type.__name__})"
 
 
-class JxTyper:
+class JxTyper(Typer):
     """
     represent Data schema
     """
@@ -137,11 +137,15 @@ class StreamTyper(Typer):
     def sum(self):
         return CallableTyper(Typer(python_type=float))
 
+    @property
+    def count(self):
+        return CallableTyper(Typer(python_type=int))
+
     def __getattr__(self, item):
         spec = inspect.getmembers(ObjectStream)
         for k, m in spec:
             if k == item:
-                logger.error("add method to handle type inference for ObjectStream")
+                logger.error("add method (above) to handle type inference for ObjectStream.{item}", item=item)
 
         output = getattr(self.member_type, item)
         if isinstance(output, UnknownTyper):
@@ -235,6 +239,15 @@ class LazyTyper(Typer):
         Typer.__init__(self)
         self._resolver = resolver or (lambda t: t)
 
+    def __getitem__(self, item):
+        if not isinstance(item, LazyTyper):
+            other = LazyTyper(lambda t: other)
+
+        def build(type_):
+            return type_[item]
+
+        return LazyTyper(build)
+
     def __getattr__(self, item):
         def build(type_):
             return getattr(type_, item)
@@ -244,6 +257,15 @@ class LazyTyper(Typer):
     def __call__(self, *args, **kwargs):
         def build(type_):
             return type_
+
+        return LazyTyper(build)
+
+    def __add__(self, other):
+        if not isinstance(other, LazyTyper):
+            other = LazyTyper(lambda t: other)
+
+        def build(type_):
+            return self._resolver(type_) + other._resolver(type_)
 
         return LazyTyper(build)
 

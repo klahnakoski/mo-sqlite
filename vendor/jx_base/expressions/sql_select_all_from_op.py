@@ -25,8 +25,8 @@ class SqlSelectAllFromOp(Expression):
         self.table = table
 
     @property
-    def type(self):
-        return {c.es_column: str(JxType(c.type)) for c in self.table.schema.columns}
+    def jx_type(self):
+        return {c.es_column: str(JxType(c.jx_type)) for c in self.table.schema.columns}
 
     def __data__(self):
         return {"sql.select_all_from": self.table.__data__()}

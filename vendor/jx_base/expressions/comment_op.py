@@ -15,6 +15,7 @@ from jx_base.expressions.literal import Literal
 from jx_base.models.container import Container
 from jx_base.utils import Log
 
+
 class CommentOp(Expression):
     def __init__(self, frum, comment):
         Expression.__init__(self, frum, comment)
@@ -38,7 +39,7 @@ class CommentOp(Expression):
         return result
 
     def __data__(self):
-        return {"comment": [self.frum.__data(), self.comment.__data__()]}
+        return {"comment": [self.frum.__data__(), self.comment.__data__()]}
 
     def vars(self):
         return self.frum.vars() | self.comment.vars()
@@ -47,5 +48,5 @@ class CommentOp(Expression):
         return CommentOp(self.frum.map(mao_), self.comment.map(map_))
 
     @property
-    def type(self):
-        return self.frum.type
+    def jx_type(self):
+        return self.frum.jx_type
