@@ -1,0 +1,26 @@
+{
+    "author": "Kyle Lahnakoski",
+    "author_email": "kyle@lahnakoski.com",
+    "classifiers": [
+        "Development Status :: 4 - Beta",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12"
+    ],
+    "description": "Multithreading for Sqlite, plus expression composition",
+    "extras_require": {"tests": ["mo-testing"]},
+    "include_package_data": true,
+    "install_requires": [
+    ],
+    "license": "MPL 2.0",
+    "long_description": {},
+    "long_description_content_type": "text/markdown",
+    "name": "mo-sqlite",
+    "packages": ["mo_sqlite", "mo_sqlite.expressions"],
+    "url": "https://github.com/klahnakoski/mo-sqlite",
+    "version": "1.0.0"
+}

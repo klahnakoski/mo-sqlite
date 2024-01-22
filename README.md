@@ -1,6 +1,6 @@
 # More SQLite!
 
-Multithreading for Sqlite, plus utils
+Multithreading for Sqlite, plus expression composition
 
 ## Multi-threaded Sqlite
 
