@@ -15,7 +15,7 @@
     "extras_require": {"tests": ["mo-testing"]},
     "include_package_data": true,
     "install_requires": [
-        "jx-python==4.497.24022",                "mo-dots",               "mo-files",
+        "jx-python==4.500.24024",                "mo-dots",               "mo-files",
                      "mo-future",             "mo-imports",                "mo-json",
                      "mo-kwargs",                "mo-logs",                "mo-math",
            "mo-sql==4.492.24021",    "mo-sql==4.492.24021",             "mo-threads",
@@ -56,5 +56,5 @@
     "name": "mo-sqlite",
     "packages": ["mo_sqlite", "mo_sqlite.expressions"],
     "url": "https://github.com/klahnakoski/mo-sqlite",
-    "version": "1.498.24022"
+    "version": "1.500.24024"
 }

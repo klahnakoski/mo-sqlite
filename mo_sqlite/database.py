@@ -31,7 +31,7 @@ Relation = delay_import("mo_sqlite.models.relation.Relation")
 
 
 DEBUG = False
-TRACE = False
+TRACE = True
 
 DOUBLE_TRANSACTION_ERROR = "You can not query outside a transaction you have open already"
 TOO_LONG_TO_HOLD_TRANSACTION = 10
@@ -113,7 +113,8 @@ class Sqlite(DB):
         self.too_long = None
         self.delayed_queries = []
         self.delayed_transactions = []
-        self.worker = Thread.run("sqlite db thread", self._worker, parent_thread=None)
+        self.worker = None
+        self.worker = Thread.run("sqlite db thread", self._worker, parent_thread=self)
 
         self.debug and Log.note(
             "Sqlite version {{version}}", version=self.query("select sqlite_version()").data[0][0],
@@ -137,9 +138,6 @@ class Sqlite(DB):
                 return percentile(self.acc, self.percentile)
 
         con.create_aggregate("percentile", 2, Percentile)
-
-    def add_child(self, child):
-        pass
 
     def transaction(self):
         thread = Thread.current()
@@ -233,6 +231,9 @@ class Sqlite(DB):
     def remove_child(self, child):
         if child is self.worker:
             self.worker = None
+
+    def add_child(self, child):
+        pass
 
     def close(self):
         Log.error("Use stop()")
@@ -350,6 +351,9 @@ class Sqlite(DB):
             self.db.close()
             if self.filename:
                 del known_databases[self.filename]
+            else:
+                self.filename = ":memory:"
+            self.debug and Log.note("Database {name|quote} is closed", name=self.filename)
 
     def _process_command_item(self, command_item):
         query, result, signal, trace, transaction = command_item
