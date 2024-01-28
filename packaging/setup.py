@@ -15,5 +15,5 @@ setup(
     name='mo-sqlite',
     packages=["mo_sqlite","mo_sqlite.expressions"],
     url='https://github.com/klahnakoski/mo-sqlite',
-    version='1.511.24028'
+    version='1.512.24028'
 )
