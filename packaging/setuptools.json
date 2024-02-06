@@ -15,11 +15,11 @@
     "extras_require": {"tests": ["mo-testing>=7.523.24033"]},
     "include_package_data": true,
     "install_requires": [
-         "jx-python==4.537.24036",    "mo-dots==9.531.24035",   "mo-files==6.531.24035",
-         "mo-future==7.531.24035", "mo-imports==7.531.24035",    "mo-json==6.531.24035",
-         "mo-kwargs==7.531.24035",    "mo-logs==8.531.24035",    "mo-math==7.531.24035",
-            "mo-sql==4.531.24035",     "mo-sql==4.531.24035", "mo-threads==6.537.24036",
-          "mo-times==5.531.24035"
+         "jx-python==4.538.24037",    "mo-dots==9.531.24035",   "mo-files==6.538.24037",
+         "mo-future==7.531.24035", "mo-imports==7.531.24035",    "mo-json==6.538.24037",
+         "mo-kwargs==7.531.24035",    "mo-logs==8.538.24037",    "mo-math==7.531.24035",
+            "mo-sql==4.538.24037",     "mo-sql==4.538.24037", "mo-threads==6.538.24037",
+          "mo-times==5.538.24037"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -56,5 +56,5 @@
     "name": "mo-sqlite",
     "packages": ["mo_sqlite", "mo_sqlite.expressions"],
     "url": "https://github.com/klahnakoski/mo-sqlite",
-    "version": "1.537.24036"
+    "version": "1.538.24037"
 }
