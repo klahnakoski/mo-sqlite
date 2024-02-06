@@ -3,7 +3,7 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 hjson==3.1.0
 idna==3.6
-jx-python==4.538.24037
+jx-python==4.539.24037
 mo-collections==5.538.24037
 mo-dots==9.531.24035
 mo-files==6.538.24037
