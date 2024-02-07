@@ -6,6 +6,9 @@
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+        "Topic :: Database",
+        "Topic :: Utilities",
+        "Programming Language :: SQL",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.11",
@@ -15,11 +18,11 @@
     "extras_require": {"tests": ["mo-testing>=7.523.24033"]},
     "include_package_data": true,
     "install_requires": [
-         "jx-python==4.539.24037",    "mo-dots==9.531.24035",   "mo-files==6.538.24037",
-         "mo-future==7.531.24035", "mo-imports==7.531.24035",    "mo-json==6.538.24037",
-         "mo-kwargs==7.531.24035",    "mo-logs==8.538.24037",    "mo-math==7.531.24035",
-            "mo-sql==4.538.24037",     "mo-sql==4.538.24037", "mo-threads==6.538.24037",
-          "mo-times==5.538.24037"
+         "jx-python==4.542.24038",    "mo-dots==9.541.24038",   "mo-files==6.542.24038",
+         "mo-future==7.541.24038", "mo-imports==7.541.24038",    "mo-json==6.541.24038",
+         "mo-kwargs==7.541.24038",    "mo-logs==8.541.24038",    "mo-math==7.541.24038",
+            "mo-sql==4.542.24038",     "mo-sql==4.542.24038", "mo-threads==6.542.24038",
+          "mo-times==5.541.24038"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -56,5 +59,5 @@
     "name": "mo-sqlite",
     "packages": ["mo_sqlite", "mo_sqlite.expressions"],
     "url": "https://github.com/klahnakoski/mo-sqlite",
-    "version": "1.539.24037"
+    "version": "1.542.24038"
 }
