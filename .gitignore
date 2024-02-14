@@ -6,3 +6,4 @@ __pycache__
 /build
 setup.py
 *.cache
+*.sqlite
