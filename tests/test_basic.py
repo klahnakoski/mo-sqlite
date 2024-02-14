@@ -11,7 +11,7 @@ import re
 from unittest import TestCase
 
 from mo_sqlite import Sqlite
-from mo_sqlite.expressions import Variable, SelectOp
+from mo_sqlite.expressions import SqlVariable, SqlSelectOp
 from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
 from mo_sqlite.sql_script import SqlStep, SqlTree
 from mo_threads import stop_main_thread
@@ -45,17 +45,17 @@ class TestBasic(TestCase):
 
         people = SqlStep(
             None,
-            SelectOp( Variable("people"), Variable("id"), Variable("name")),
-            [SqlAliasOp("name", Variable("name"))],
-            uids=(Variable("id"),),
+            SqlSelectOp(SqlVariable("people"), SqlVariable("id"), SqlVariable("name")),
+            [SqlAliasOp(SqlVariable("name"), "name")],
+            uids=(SqlVariable("id"),),
             order=(),
         )
         pets = SqlStep(
             people,
-            SelectOp(Variable("pets"), Variable("id"), Variable("name"), Variable("_order"), Variable("owner")),
-            [SqlAliasOp("pets.$A.name", Variable("name"))],
-            uids=(Variable("owner"), Variable("id")),
-            order=(Variable("_order"),),
+            SqlSelectOp(SqlVariable("pets"), SqlVariable("id"), SqlVariable("name"), SqlVariable("_order"), SqlVariable("owner")),
+            [SqlAliasOp(SqlVariable("name"), "pets.$A.name")],
+            uids=(SqlVariable("owner"), SqlVariable("id")),
+            order=(SqlVariable("_order"),),
         )
 
         sql = SqlTree([pets]).to_sql()
@@ -98,23 +98,23 @@ class TestBasic(TestCase):
 
         people = SqlStep(
             None,
-            SelectOp(Variable("people"), Variable("id"), Variable("name")),
-            [SqlAliasOp("name", Variable("name"))],
-            uids=(Variable("id"),),
+            SqlSelectOp(SqlVariable("people"), SqlVariable("id"), SqlVariable("name")),
+            [SqlAliasOp(SqlVariable("name"), "name")],
+            uids=(SqlVariable("id"),),
             order=(),
         )
         pets = SqlStep(
             people,
-            SelectOp(Variable("pets"), Variable("id"), Variable("name"), Variable("_order"), Variable("owner")),
-            [SqlAliasOp("pets.$A.name", Variable("name"))],
-            uids=(Variable("owner"), Variable("id")),
-            order=(Variable("_order"),),
+            SqlSelectOp(SqlVariable("pets"), SqlVariable("id"), SqlVariable("name"), SqlVariable("_order"), SqlVariable("owner")),
+            [SqlAliasOp(SqlVariable("name"), "pets.$A.name")],
+            uids=(SqlVariable("owner"), SqlVariable("id")),
+            order=(SqlVariable("_order"),),
         )
         albums = SqlStep(
             people,
-            SelectOp(Variable("albums"), Variable("id"), Variable("cover"), Variable("owner")),
-            [SqlAliasOp("albums.$A.cover", Variable("cover"))],
-            uids=(Variable("owner"), Variable("id")),
+            SqlSelectOp(SqlVariable("albums"), SqlVariable("id"), SqlVariable("cover"), SqlVariable("owner")),
+            [SqlAliasOp(SqlVariable("cover"), "albums.$A.cover")],
+            uids=(SqlVariable("owner"), SqlVariable("id")),
             order=(),
         )
 

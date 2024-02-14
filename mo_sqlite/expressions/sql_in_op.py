@@ -7,11 +7,12 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from jx_base.expressions import SqlIsNullOp as SqlIsNullOp_
-from mo_sqlite.utils import sql_iso, SQL_IS_NULL, SQL
+from jx_base.expressions import SqlInOp as _SqlInOp
+from mo_sql import SQL_IN, SQL
 
 
-class SqlIsNullOp(SqlIsNullOp_, SQL):
+class SqlInOp(_SqlInOp, SQL):
     def __iter__(self):
-        yield from sql_iso(self.term)
-        yield from SQL_IS_NULL
+        yield from self.value
+        yield from SQL_IN
+        yield from self.superset

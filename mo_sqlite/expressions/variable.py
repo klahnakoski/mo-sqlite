@@ -7,18 +7,20 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
+from mo_dots import concat_field
 from mo_sql import SQL
-
-from jx_base.expressions import Variable as Variable_
+from jx_base.expressions import Variable as _Variable
 from mo_sqlite import quote_column
 
 
-class Variable(Variable_, SQL):
+class Variable(_Variable, SQL):
 
     __new__ = object.__new__
 
-    def __init__(self, var):
-        Variable_.__init__(self, var)
+    def __init__(self, es_index, es_column):
+        _Variable.__init__(self, concat_field(es_index, es_column))
+        self.es_index = es_index
+        self.es_column = es_column
 
     def __iter__(self):
-        yield from quote_column(self.var)
+        yield from quote_column(self.es_index, self.es_column)
