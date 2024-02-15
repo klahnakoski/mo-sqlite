@@ -285,7 +285,7 @@ class Sqlite(DB):
 
                 full_path = file.abs_path
                 self.db.enable_load_extension(True)
-                self.db.execute(text(SQL_SELECT + "load_extension" + sql_iso(quote_value(full_path))))
+                self.db.execute(str(SQL_SELECT + "load_extension" + sql_iso(quote_value(full_path))))
         except Exception as e:
             if not _load_extension_warning_sent:
                 _load_extension_warning_sent = True

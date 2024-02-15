@@ -7,11 +7,11 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from jx_base.expressions import SqlIsNullOp as SqlIsNullOp_
-from mo_sqlite.utils import sql_iso, SQL_IS_NULL, SQL
 
 
-class SqlIsNullOp(SqlIsNullOp_, SQL):
-    def __iter__(self):
-        yield from sql_iso(self.term)
-        yield from SQL_IS_NULL
+from jx_base.expressions import GteOp as _GteOp
+from jx_python.expressions._utils import _inequality_to_python
+
+
+class GteOp(_GteOp):
+    to_python = _inequality_to_python
