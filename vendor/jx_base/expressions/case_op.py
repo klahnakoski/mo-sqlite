@@ -85,7 +85,7 @@ class CaseOp(Expression):
             for w in self.whens:
                 ors.append(lang.AndOp(*nots, w.when, w.then))
                 nots.append(lang.NotOp(w.when))
-            ors.append(lang.AndOp(*nots, *self.whens, self.els_))
+            ors.append(lang.AndOp(*nots, self.els_))
             return lang.OrOp(*ors).partial_eval(lang)
 
         whens = []
