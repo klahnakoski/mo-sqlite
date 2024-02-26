@@ -295,8 +295,7 @@ class Sqlite(DB):
 
     def create_new_functions(self):
         def regexp(pattern, item):
-            reg = re.compile(pattern)
-            return reg.search(item) is not None
+            return re.search(pattern, item) is not None
 
         self.db.create_function("REGEXP", 2, regexp)
 

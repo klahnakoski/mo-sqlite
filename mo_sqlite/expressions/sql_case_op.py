@@ -7,25 +7,20 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from dataclasses import dataclass
 
-from jx_base import NULL
-from jx_base.expressions import CaseOp as _CaseOp
+from jx_base import NULL, TRUE, FALSE, is_op
+from jx_base.expressions import CaseOp as _CaseOp, ZERO, Literal, is_literal
+from jx_base.expressions import WhenOp as _WhenOp
 from mo_sql import (
-    SQL,
     SQL_CASE,
     SQL_ELSE,
     SQL_END,
     SQL_THEN,
-    SQL_WHEN,
+    SQL_WHEN, SQL,
 )
 
 
-@dataclass
-class When:
-    when: SQL
-    then: SQL
-
+class WhenOp(_WhenOp, SQL):
     def __iter__(self):
         yield from SQL_WHEN
         yield from self.when
@@ -33,9 +28,9 @@ class When:
         yield from self.then
 
 
-class CaseOp(_CaseOp):
+class CaseOp(_CaseOp, SQL):
 
-    def __init__(self, whens, _else):
+    def __init__(self, *whens, _else=NULL):
         super().__init__(*whens, _else)
 
 
@@ -47,3 +42,21 @@ class CaseOp(_CaseOp):
             yield from SQL_ELSE
             yield from self.els_
         yield from SQL_END
+
+    def partial_eval(self, lang):
+        whens = []
+        _else = self._else.partial_eval(lang)
+        for w in self.whens:
+            when = w.when.partial_eval(lang)
+            if is_literal(when):
+                if when is ZERO or when is FALSE or when.missing(lang) is TRUE:
+                    pass
+                else:
+                    _else = w.then.partial_eval(lang)
+                    break
+            else:
+                whens.append(lang.WhenOp(when, then=w.then.partial_eval(lang)))
+
+        if len(whens) == 0:
+            return _else
+        return lang.CaseOp(*whens, _else=_else)
