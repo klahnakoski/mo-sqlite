@@ -29,7 +29,7 @@ class CoalesceOp(_CoalesceOp, SQL):
         elif len(terms) == 1:
             return terms[0]
         else:
-            return CoalesceOp(*terms)
+            return lang.CoalesceOp(*terms)
 
     def __iter__(self):
         yield from sql_call("COALESCE", *self.terms)

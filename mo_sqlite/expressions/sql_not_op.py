@@ -7,15 +7,12 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
+from jx_base.expressions import NotOp as _NotOp
+from mo_sql import SQL_NOT
+from mo_sqlite.utils import SQL
 
 
-from jx_base.expressions import SqlEqOp as _SqlEqOp
-from mo_sql import SQL_EQ, SQL
-
-
-class SqlEqOp(_SqlEqOp, SQL):
+class NotOp(_NotOp, SQL):
     def __iter__(self):
-        yield from self.lhs
-        yield from SQL_EQ
-        yield from self.rhs
-
+        yield from SQL_NOT
+        yield from self.term

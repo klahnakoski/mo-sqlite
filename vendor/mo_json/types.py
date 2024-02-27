@@ -30,7 +30,7 @@ def to_jx_type(value):
 class JxType(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
-            if k=="..":
+            if k == "..":
                 logger.error("not allowed")
             setattr(self, k, v)
 

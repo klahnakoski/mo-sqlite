@@ -8,7 +8,7 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from jx_base.expressions import SqlVariable as _SqlVariable
-from mo_sqlite.expressions._utils import SQLang
+from mo_sqlite.expressions._utils import SQLang, SqlScript
 from mo_sql import SQL
 from mo_sqlite.utils import quote_column
 
@@ -22,3 +22,10 @@ class SqlVariable(_SqlVariable, SQL):
         params = [p for p in self.es_path if p is not None]
         yield from quote_column(*params)
 
+    def to_sql(self, schema):
+        return SqlScript(
+            jx_type=self.jx_type,
+            expr=self,
+            frum=self,
+            schema=schema,
+        )

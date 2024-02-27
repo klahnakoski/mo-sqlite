@@ -8,18 +8,13 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 
-from jx_base.expressions.false_op import FalseOp
-from jx_base.expressions.null_op import NullOp
-from jx_base.expressions.true_op import TrueOp
-from jx_base.language import Language
+from jx_base.expressions import FalseOp,NullOp,TrueOp
 from mo_future import extend, decorate
-from mo_imports import expect
 from mo_logs import Log
+from mo_sqlite.expressions.sql_script import SqlScript, SQLang
 from mo_sqlite.utils import SQL_NULL, SQL_TRUE, SQL_FALSE, TYPE_CHECK
 
-SQLang = Language("SQLang")
-
-SqlScript = expect("SqlScript")
+__all__ = ["check", "SQLang", "SqlScript"]
 
 
 def check(func):
@@ -30,7 +25,7 @@ def check(func):
         return func
 
     @decorate(func)
-    def to_sql(self, schema):
+    def to_sql(self, schema) -> SqlScript:
         try:
             output = func(self, schema)
         except Exception as e:
@@ -42,6 +37,7 @@ def check(func):
         return output
 
     return to_sql
+
 
 @extend(NullOp)
 def __iter__(self):

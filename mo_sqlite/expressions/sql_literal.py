@@ -19,6 +19,7 @@ SqlLiteral = Literal
 if SQL not in Literal.__bases__:
     Literal.__bases__ = Literal.__bases__ + (SQL,)
 
+
 @extend(Literal)
 def __iter__(self):
     yield from quote_value(self.value)

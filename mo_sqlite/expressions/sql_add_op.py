@@ -7,15 +7,15 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
+from jx_base.expressions import AddOp as _AddOp
+from mo_sql import NO_SQL
+from mo_sqlite.utils import SQL_ADD, SQL
 
 
-from jx_base.expressions import SqlEqOp as _SqlEqOp
-from mo_sql import SQL_EQ, SQL
-
-
-class SqlEqOp(_SqlEqOp, SQL):
+class AddOp(_AddOp, SQL):
     def __iter__(self):
-        yield from self.lhs
-        yield from SQL_EQ
-        yield from self.rhs
-
+        op = NO_SQL
+        for term in self.terms:
+            yield from op
+            yield from term
+            op = SQL_ADD
