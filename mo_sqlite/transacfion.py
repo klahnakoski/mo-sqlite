@@ -9,12 +9,12 @@
 #
 from dataclasses import is_dataclass, fields
 
-from jx_sqlite.utils import untype_field
 from mo_dots import unwraplist, Data, is_missing
 from mo_future import allocate_lock as _allocate_lock
 from mo_logs import Except, logger
 from mo_logs.exceptions import get_stacktrace
 from mo_sql import sql_iso
+from mo_sql.utils import untype_field
 from mo_threads import Lock
 
 from mo_sqlite.utils import CommandItem, FORMAT_COMMAND, ROLLBACK, COMMIT, quote_column

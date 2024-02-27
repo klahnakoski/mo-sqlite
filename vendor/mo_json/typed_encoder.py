@@ -104,7 +104,7 @@ def get_nested_path(typed_path):
     nested_path = (parent,)
     for i, p in enumerate(path[:-1]):
         if p == ARRAY_KEY:
-            step = concat_field(parent, join_field(path[0: i + 1]))
+            step = concat_field(parent, join_field(path[0 : i + 1]))
             nested_path = (step,) + nested_path
     return nested_path
 
@@ -180,7 +180,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             if value_json_type == column_json_type:
                 pass  # ok
             elif value_json_type == ARRAY and all(
-                    python_type_to_jx_type[v.__class__] == column_json_type for v in value if v != None
+                python_type_to_jx_type[v.__class__] == column_json_type for v in value if v != None
             ):
                 pass  # empty arrays can be anything
             else:

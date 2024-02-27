@@ -8,21 +8,21 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from jx_base.expressions import NULL, SqlSubstrOp as _SqlSubstrOp, is_literal
-from mo_sql import SQL, SQL_LP
+from mo_sql import SQL, SQL_OP, SQL_CP
 from mo_sqlite.expressions._utils import SQLang
 
 
 class SqlSubstrOp(_SqlSubstrOp, SQL):
     def __iter__(self):
         yield from SQL("SUBSTR")
-        yield from SQL_LP
+        yield from SQL_OP
         yield from self.value
         yield from SQL(",")
         yield from self.start
         if self.length is not NULL:
             yield from SQL(",")
             yield from self.length
-        yield from SQL(")")
+        yield from SQL_CP
 
     def partial_eval(self, lang):
         value = self.value.partial_eval(SQLang)
