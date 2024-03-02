@@ -8,9 +8,17 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from jx_base.expressions import SqlAndOp as _SqlAndOp
-from mo_sqlite.utils import JoinSQL, SQL_AND, SQL
+from mo_sql import NO_SQL, SQL_LP, SQL_RP
+from mo_sqlite.utils import SQL_AND, SQL
 
 
 class SqlAndOp(_SqlAndOp, SQL):
     def __iter__(self):
-        yield from JoinSQL(SQL_AND, self.terms)
+        op = NO_SQL
+        for t in self.terms:
+            yield from op
+            op = SQL_AND
+            yield from SQL_LP
+            yield from t
+            yield from SQL_RP
+

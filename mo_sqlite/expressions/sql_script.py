@@ -7,23 +7,25 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
+import inspect
 
 from jx_base.expressions import (
     FALSE,
-    SqlScript as _SQLScript,
+    SqlScript as _SqlScript,
     TRUE,
     MissingOp,
 )
+from jx_base.expressions._utils import TYPE_CHECK
 from jx_base.expressions.variable import is_variable
 from jx_base.language import is_op, Expression, Language
 from mo_json import JxType
-from mo_logs import Log
-from mo_sql import SQL, SQL_CASE, SQL_END, SQL_NULL, SQL_THEN, SQL_WHEN, ConcatSQL, sql_iso, SQL_NOT
+from mo_logs import Log, logger
+from mo_sql import SQL, SQL_CASE, SQL_END, SQL_NULL, SQL_THEN, SQL_WHEN, ConcatSQL, sql_iso, SQL_NOT, SQL_OP, SQL_CP
 
 SQLang = Language("SQLang")
 
 
-class SqlScript(_SQLScript, SQL):
+class SqlScript(_SqlScript, SQL):
     """
     DESCRIBE AN UNSTRUCTURED SQL SCRIPT
     """
@@ -32,19 +34,26 @@ class SqlScript(_SQLScript, SQL):
 
     def __init__(self, jx_type, expr, frum, miss=None, schema=None):
         object.__init__(self)
-        if expr == None or expr is self:
-            Log.error("expecting expr")
-        if not isinstance(expr, SQL):
-            Log.error("Expecting SQL")
-        if not isinstance(jx_type, JxType):
-            Log.error("Expecting JsonType")
-        if schema is None:
-            Log.error("expecting schema")
-
+        if TYPE_CHECK:
+            if expr == None or expr is self:
+                Log.error("expecting expr")
+            if isinstance(expr, _SqlScript):
+                Log.error("no SqlScript allowed")
+            if not isinstance(expr, SQL):
+                Log.error("Expecting SQL")
+            if not isinstance(jx_type, JxType):
+                Log.error("Expecting JsonType")
+            if schema is None:
+                Log.error("expecting schema")
         if miss is None:
-            self.miss = frum.missing(SQLang)
-        else:
-            self.miss = miss
+            miss = frum.missing(SQLang).partial_eval(SQLang)
+        if TYPE_CHECK:
+            if miss not in [TRUE, FALSE] and isinstance(miss, SQL):
+                Log.error("expecting miss to not be SQL")
+            if miss.missing(SQLang).partial_eval(SQLang) is not FALSE:
+                Log.error("expecting miss to not be missing")
+
+        self.miss = miss
         self._jx_type = jx_type
         self._expr = expr
         self.frum = frum  # THE ORIGINAL EXPRESSION THAT MADE expr
@@ -70,10 +79,31 @@ class SqlScript(_SQLScript, SQL):
             Log.error("do not know how to handle")
 
     def __iter__(self):
-        """
-        ASSUMED TO OVERRIDE SQL.__iter__()
-        """
-        return self._sql().__iter__()
+        self.miss = self.miss.partial_eval(SQLang)
+        if self.miss is TRUE:
+            yield from SQL_NULL
+            return
+        if self.miss is FALSE or is_variable(self.frum):
+            yield from self._expr
+            return
+
+        if TYPE_CHECK and len(inspect.stack()) > 100:
+            logger.alert("stack overflow?")
+            return
+
+        if is_op(self.miss, MissingOp) and is_variable(self.frum) and self.miss.expr == self.frum:
+            yield from self._expr
+            return
+
+        yield from SQL_CASE
+        yield from SQL_WHEN
+        yield from SQL_NOT
+        yield from SQL_OP
+        yield from self.miss.to_sql(self.schema)
+        yield from SQL_CP
+        yield from SQL_THEN
+        yield from self._expr
+        yield from SQL_END
 
     @property
     def sql(self):
@@ -89,7 +119,10 @@ class SqlScript(_SQLScript, SQL):
         if is_op(self.miss, MissingOp) and is_variable(self.frum) and self.miss.expr == self.frum:
             return self._expr
 
-        return ConcatSQL(SQL_CASE, SQL_WHEN, SQL_NOT, sql_iso(self.miss.to_sql(self.schema)), SQL_THEN, self._expr, SQL_END, )
+        try:
+            return ConcatSQL(SQL_CASE, SQL_WHEN, SQL_NOT, sql_iso(self.miss.to_sql(self.schema)), SQL_THEN, self._expr, SQL_END, )
+        except Exception as cause:
+            Log.error("not expected", cause=cause)
 
     def __str__(self):
         return str(self._sql())
@@ -104,6 +137,14 @@ class SqlScript(_SQLScript, SQL):
         return {"script": self.expr}
 
     def __eq__(self, other):
-        if not isinstance(other, _SQLScript):
+        if isinstance(self._expr, _SqlScript):
+            Log.error("no SqlScript allowed")
+
+        if not isinstance(other, _SqlScript):
             return False
+
+        if TYPE_CHECK and len(inspect.stack()) > 100:
+            logger.alert("stack overflow?")
+            return
+
         return self.expr == other.expr
