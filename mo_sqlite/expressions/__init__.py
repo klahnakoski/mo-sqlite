@@ -18,6 +18,7 @@ from mo_sqlite.expressions.sql_literal import SqlLiteral
 from mo_sqlite.expressions.sql_lt_op import SqlLtOp
 from mo_sqlite.expressions.sql_lte_op import SqlLteOp
 from mo_sqlite.expressions.sql_not_op import NotOp as SqlNotOp
+from mo_sqlite.expressions.sql_or_op import SqlOrOp
 from mo_sqlite.expressions.sql_order_by_op import SqlOrderByOp
 from mo_sqlite.expressions.sql_script import SqlScript
 from mo_sqlite.expressions.sql_select_op import SqlSelectOp
