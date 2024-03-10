@@ -7,14 +7,14 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from jx_base.expressions import NotOp as _NotOp
-from mo_sql import SQL_NOT, SQL_OP, SQL_CP
-from mo_sqlite.utils import SQL
+from jx_base.expressions import SqlConcatOp as _SqlConcatOp
+from mo_sql import NO_SQL, SQL_CONCAT, SQL
 
 
-class NotOp(_NotOp, SQL):
+class SqlConcatOp(_SqlConcatOp, SQL):
     def __iter__(self):
-        yield from SQL_NOT
-        yield from SQL_OP
-        yield from self.term
-        yield from SQL_CP
+        op = NO_SQL
+        for term in self.terms:
+            yield from op
+            yield from term
+            op = SQL_CONCAT

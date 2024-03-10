@@ -54,7 +54,10 @@ class CaseOp(_CaseOp, SQL):
                 ors.append(SqlAndOp(*nots, w.when, w.then))
                 nots.append(SqlNotOp(w.when))
             ors.append(SqlAndOp(*nots, self.els_))
-            return SqlOrOp(*ors).partial_eval(lang)
+            return (
+                SqlOrOp(*ors)
+                .partial_eval(lang)
+            )
 
         whens = []
         _else = self._else.partial_eval(lang)

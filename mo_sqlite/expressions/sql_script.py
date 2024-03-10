@@ -16,7 +16,9 @@ from jx_base.expressions import (
     MissingOp,
 )
 from jx_base.expressions._utils import TYPE_CHECK
+from jx_base.expressions.sql_not_op import SqlNotOp
 from jx_base.expressions.variable import is_variable
+from mo_sqlite.expressions.sql_case_op import CaseOp as SqlCaseOp, WhenOp as SqlWhenOp
 from jx_base.language import is_op, Expression, Language
 from mo_json import JxType
 from mo_logs import Log, logger
@@ -120,7 +122,7 @@ class SqlScript(_SqlScript, SQL):
             return self._expr
 
         try:
-            return ConcatSQL(SQL_CASE, SQL_WHEN, SQL_NOT, sql_iso(self.miss.to_sql(self.schema)), SQL_THEN, self._expr, SQL_END, )
+            return SqlCaseOp(SqlWhenOp(SqlNotOp(self.miss.to_sql(self.schema).expr, self._expr)))
         except Exception as cause:
             Log.error("not expected", cause=cause)
 

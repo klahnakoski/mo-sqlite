@@ -1,6 +1,7 @@
 
 from mo_sqlite.expressions._utils import SQLang, SqlScript
 from mo_sqlite.expressions.sql_add_op import AddOp as SqlAddOp
+from mo_sqlite.expressions.sql_concat_op import SqlConcatOp
 from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
 from mo_sqlite.expressions.sql_and_op import SqlAndOp
 from mo_sqlite.expressions.sql_case_op import CaseOp as SqlCaseOp, WhenOp as SqlWhenOp

@@ -7,20 +7,20 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from jx_base.expressions import Literal
+from jx_base.expressions import Literal as SqlLiteral
 from mo_future import extend
-from mo_sql import SQL
+from mo_sql import SQL, SQL_EMPTY_STRING
 from mo_sqlite.utils import quote_value
 
 
-SqlLiteral = Literal
+if SQL not in SqlLiteral.__bases__:
+    SqlLiteral.__bases__ = SqlLiteral.__bases__ + (SQL,)
 
 
-if SQL not in Literal.__bases__:
-    Literal.__bases__ = Literal.__bases__ + (SQL,)
-
-
-@extend(Literal)
+@extend(SqlLiteral)
 def __iter__(self):
     yield from quote_value(self.value)
 
+
+SQL_EMPTY_STRING.__class__ = SqlLiteral
+SQL_EMPTY_STRING._value = ""
