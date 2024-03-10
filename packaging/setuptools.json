@@ -18,11 +18,11 @@
     "extras_require": {"tests": ["mo-testing>=7.523.24033"]},
     "include_package_data": true,
     "install_requires": [
-         "jx-python==4.555.24068",    "mo-dots==9.549.24062",   "mo-files==6.553.24062",
-         "mo-future==7.546.24057", "mo-imports==7.546.24057",    "mo-json==6.552.24062",
-         "mo-kwargs==7.551.24062",    "mo-logs==8.551.24062",    "mo-math==7.552.24062",
-            "mo-sql==4.553.24062",     "mo-sql==4.553.24062", "mo-threads==6.552.24062",
-          "mo-times==5.552.24062"
+         "jx-python==4.556.24070",    "mo-dots==9.549.24062",   "mo-files==6.556.24070",
+         "mo-future==7.546.24057", "mo-imports==7.546.24057",    "mo-json==6.556.24070",
+         "mo-kwargs==7.551.24062",    "mo-logs==8.556.24070",    "mo-math==7.552.24062",
+            "mo-sql==4.556.24070",     "mo-sql==4.556.24070", "mo-threads==6.556.24070",
+          "mo-times==5.556.24070"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -30,6 +30,13 @@
             "# More SQLite!",
             "",
             "Multithreading for Sqlite, plus expression composition",
+            "",
+            "",
+            "[![PyPI Latest Release](https://img.shields.io/pypi/v/mo-sqlite.svg)](https://pypi.org/project/mo-sqlite/)",
+            "[![Build Status](https://github.com/klahnakoski/mo-sqlite/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/klahnakoski/mo-sqlite/actions/workflows/build.yml)",
+            "[![Coverage Status](https://coveralls.io/repos/github/klahnakoski/mo-sqlite/badge.svg?branch=dev)](https://coveralls.io/github/klahnakoski/mo-sqlite?branch=dev)",
+            "[![Downloads](https://pepy.tech/badge/mo-sqlite/month)](https://pepy.tech/project/mo-sqlite)",
+            "",
             "",
             "## Multi-threaded Sqlite",
             "",
@@ -59,5 +66,5 @@
     "name": "mo-sqlite",
     "packages": ["mo_sqlite", "mo_sqlite.expressions"],
     "url": "https://github.com/klahnakoski/mo-sqlite",
-    "version": "2.555.24068"
+    "version": "2.556.24070"
 }
