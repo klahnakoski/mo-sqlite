@@ -11,6 +11,7 @@ from jx_base import TRUE, FALSE, is_op
 from jx_base.expressions import SqlAndOp as _SqlAndOp
 from mo_json import JX_BOOLEAN
 from mo_sql import NO_SQL, SQL_LP, SQL_RP, SQL_AND, SQL
+
 # from mo_sqlite.expressions.sql_script import SQLang, SqlScript
 from mo_sqlite.expressions.sql_not_op import NotOp as SqlNotOp
 from mo_sqlite.expressions.sql_or_op import SqlOrOp
@@ -28,11 +29,11 @@ class SqlAndOp(_SqlAndOp, SQL):
 
     def to_sql(self, schema):
         return SqlScript(
-            jx_type = JX_BOOLEAN,
-            expr = SqlAndOp(*(t.to_sql(schema) for t in self.terms)).partial_eval(SQLang),
-            frum = self,
-            miss = FALSE,
-            schema=schema
+            jx_type=JX_BOOLEAN,
+            expr=SqlAndOp(*(t.to_sql(schema) for t in self.terms)).partial_eval(SQLang),
+            frum=self,
+            miss=FALSE,
+            schema=schema,
         )
 
     def partial_eval(self, lang):
@@ -81,4 +82,3 @@ class SqlAndOp(_SqlAndOp, SQL):
         return SqlOrOp(
             *(lang.AndOp(*and_terms) if len(and_terms) > 1 else and_terms[0] for and_terms in or_terms)
         ).partial_eval(lang)
-
