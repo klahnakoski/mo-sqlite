@@ -18,13 +18,23 @@ from jx_base.expressions import (
 from jx_base.expressions._utils import TYPE_CHECK
 from jx_base.expressions.sql_not_op import SqlNotOp
 from jx_base.expressions.variable import is_variable
-from mo_sqlite.expressions.sql_case_op import CaseOp as SqlCaseOp, WhenOp as SqlWhenOp
 from jx_base.language import is_op, Expression, Language
+from mo_future import extend
+from mo_imports import expect
 from mo_json import JxType
 from mo_logs import Log, logger
-from mo_sql import SQL, SQL_CASE, SQL_END, SQL_NULL, SQL_THEN, SQL_WHEN, ConcatSQL, sql_iso, SQL_NOT, SQL_OP, SQL_CP
+from mo_sql import SQL
+from mo_sql import SQL_CASE, SQL_END, SQL_NULL, SQL_THEN, SQL_WHEN, SQL_NOT, SQL_OP, SQL_CP
+
+SqlCaseOp, SqlWhenOp = expect("SqlCaseOp", "SqlWhenOp")
+
 
 SQLang = Language("SQLang")
+
+
+@extend(SQL)
+def to_sql(self, schema):
+    return SqlScript(jx_type=self.jx_type, expr=self, frum=self, schema=schema)
 
 
 class SqlScript(_SqlScript, SQL):

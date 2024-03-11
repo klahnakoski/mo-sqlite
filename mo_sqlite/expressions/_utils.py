@@ -11,10 +11,11 @@
 from jx_base.expressions import FalseOp, NullOp, TrueOp
 from mo_future import extend, decorate
 from mo_logs import Log
-from mo_sqlite.expressions.sql_script import SqlScript, SQLang
+from mo_sqlite.expressions.sql_script import SqlScript, SQLang, SQL
 from mo_sqlite.utils import SQL_NULL, SQL_TRUE, SQL_FALSE, TYPE_CHECK
 
-__all__ = ["check", "SQLang", "SqlScript"]
+
+__all__ = ["check", "SQLang", "SqlScript", "SQL"]
 
 
 def check(func):

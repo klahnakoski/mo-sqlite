@@ -9,7 +9,7 @@
 #
 from jx_base.expressions import SqlIsNullOp as _SqlIsNullOp
 from mo_sql import SQL_IS_NULL, sql_iso
-from mo_sqlite.utils import SQL
+from mo_sqlite.expressions._utils import SQL
 
 
 class SqlIsNullOp(_SqlIsNullOp, SQL):

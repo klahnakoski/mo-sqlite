@@ -8,7 +8,8 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from jx_base.expressions import CoalesceOp as _CoalesceOp, is_literal, NULL
-from mo_sql import SQL, sql_call
+from mo_sqlite.expressions._utils import SQL
+from mo_sql import sql_call
 
 
 class CoalesceOp(_CoalesceOp, SQL):

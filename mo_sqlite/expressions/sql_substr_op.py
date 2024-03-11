@@ -8,7 +8,8 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from jx_base.expressions import NULL, SqlSubstrOp as _SqlSubstrOp, is_literal
-from mo_sql import SQL, SQL_OP, SQL_CP
+from mo_sqlite.expressions._utils import SQL
+from mo_sql import SQL_OP, SQL_CP
 from mo_sqlite.expressions._utils import SQLang
 
 

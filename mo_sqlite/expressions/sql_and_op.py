@@ -11,10 +11,9 @@ from jx_base import TRUE, FALSE, is_op
 from jx_base.expressions import SqlAndOp as _SqlAndOp
 from mo_json import JX_BOOLEAN
 from mo_sql import NO_SQL, SQL_LP, SQL_RP, SQL_AND, SQL
-
-# from mo_sqlite.expressions.sql_script import SQLang, SqlScript
 from mo_sqlite.expressions.sql_not_op import NotOp as SqlNotOp
 from mo_sqlite.expressions.sql_or_op import SqlOrOp
+from mo_sqlite.expressions.sql_script import SqlScript, SQLang
 
 
 class SqlAndOp(_SqlAndOp, SQL):
@@ -77,7 +76,7 @@ class SqlAndOp(_SqlAndOp, SQL):
             elif len(and_terms) == 1:
                 return and_terms[0]
             else:
-                return lang.SqlAndOp(*and_terms, nulls=self.decisive)
+                return lang.SqlAndOp(*and_terms)
 
         return SqlOrOp(
             *(lang.AndOp(*and_terms) if len(and_terms) > 1 else and_terms[0] for and_terms in or_terms)
