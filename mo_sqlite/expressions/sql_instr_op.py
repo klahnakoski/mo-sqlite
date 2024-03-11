@@ -10,7 +10,8 @@
 from jx_base.expressions import SqlInstrOp as _SqlInstrOp, FALSE
 from jx_base.expressions._utils import simplified
 from mo_json import JX_INTEGER
-from mo_sql import SQL, sql_call
+from mo_sqlite.expressions._utils import SQL
+from mo_sql import sql_call
 from mo_sqlite.expressions._utils import SQLang
 from mo_sqlite.expressions.sql_script import SqlScript
 

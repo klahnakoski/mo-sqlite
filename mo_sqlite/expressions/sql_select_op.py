@@ -17,7 +17,8 @@ from jx_base.expressions.sql_select_op import SqlSelectOp as _SqlSelectOp
 from jx_base.language import is_expression, is_op, Expression
 from mo_json import union_type
 from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
-from mo_sqlite.utils import SQL_SELECT, sql_iso, SQL_FROM, SQL, quote_column, TYPE_CHECK
+from mo_sqlite.utils import SQL_SELECT, sql_iso, SQL_FROM, quote_column, TYPE_CHECK
+from mo_sqlite.expressions._utils import SQL
 
 
 class SqlSelectOp(_SqlSelectOp, SQL):

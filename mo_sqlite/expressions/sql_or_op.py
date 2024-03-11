@@ -12,7 +12,7 @@ from jx_base.expressions.sql_and_op import SqlAndOp
 from jx_base import FALSE, TRUE, NULL, is_op
 from jx_base.expressions import SqlOrOp as _SqlOrOp
 from mo_sql import NO_SQL, SQL_OR, SQL_OP, SQL_CP
-from mo_sqlite.utils import SQL
+from mo_sqlite.expressions._utils import SQL
 
 
 class SqlOrOp(_SqlOrOp, SQL):

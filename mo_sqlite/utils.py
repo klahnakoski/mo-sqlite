@@ -188,7 +188,6 @@ def sql_insert(table, records):
         sql_list(sql_iso(sql_list([quote_value(r[k]) for k in keys])) for r in records),
     )
 
-
 BEGIN = "BEGIN"
 COMMIT = "COMMIT"
 ROLLBACK = "ROLLBACK"

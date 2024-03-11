@@ -8,8 +8,8 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from jx_base.expressions import AddOp as _AddOp
-from mo_sql import NO_SQL
-from mo_sqlite.utils import SQL_ADD, SQL
+from mo_sql import NO_SQL, SQL_ADD
+from mo_sqlite.expressions._utils import SQL
 
 
 class AddOp(_AddOp, SQL):

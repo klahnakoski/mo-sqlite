@@ -9,7 +9,8 @@
 #
 from jx_base.expressions import Literal as SqlLiteral
 from mo_future import extend
-from mo_sql import SQL, SQL_EMPTY_STRING
+from mo_sqlite.expressions._utils import SQL
+from mo_sql import SQL_EMPTY_STRING
 from mo_sqlite.utils import quote_value
 
 

@@ -10,6 +10,7 @@
 from jx_base import NULL, TRUE, FALSE, is_op
 from jx_base.expressions import CaseOp as _CaseOp, ZERO, is_literal
 from jx_base.expressions import WhenOp as _WhenOp
+from mo_imports import export
 from mo_json import JX_BOOLEAN
 from mo_sql import (
     SQL_CASE,
@@ -81,3 +82,7 @@ class CaseOp(_CaseOp, SQL):
         if len(whens) == 0:
             return _else
         return lang.CaseOp(*whens, _else=_else)
+
+
+export("mo_sqlite.expressions.sql_script", "SqlCaseOp", CaseOp)
+export("mo_sqlite.expressions.sql_script", "SqlWhenOp", WhenOp)

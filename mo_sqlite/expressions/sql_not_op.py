@@ -9,7 +9,7 @@
 #
 from jx_base.expressions import NotOp as _NotOp
 from mo_sql import SQL_NOT, SQL_OP, SQL_CP
-from mo_sqlite.utils import SQL
+from mo_sqlite.expressions._utils import SQL
 
 
 class NotOp(_NotOp, SQL):
