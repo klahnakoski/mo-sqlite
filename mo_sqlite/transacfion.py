@@ -8,6 +8,7 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from dataclasses import is_dataclass, fields
+from typing import Optional
 
 from mo_dots import unwraplist, Data, is_missing
 from mo_future import allocate_lock as _allocate_lock
@@ -120,16 +121,16 @@ def table_to_list(result, *, as_dataclass):
     field_names = fields(as_dataclass)
     fields_to_index = [None] * len(field_names)
     for fi, f in enumerate(field_names):
-        for hi, h in enumerate(result.header):
+        for index, h in enumerate(result.header):
             if untype_field(h)[0] == f.name:
-                fields_to_index[fi] = hi
+                fields_to_index[fi] = index
 
     output = []
     for row in result.data:
         obj = object.__new__(as_dataclass)
         obj.__dict__ = {
-            f.name: None if hi is None else value_to_type(row[hi], f.type)
-            for f, hi in zip(field_names, fields_to_index)
+            f.name: None if header_index is None else row[header_index]
+            for f, header_index in zip(field_names, fields_to_index)
         }
         output.append(obj)
     return output
