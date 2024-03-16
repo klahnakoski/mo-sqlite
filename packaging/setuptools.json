@@ -15,14 +15,14 @@
         "Programming Language :: Python :: 3.12"
     ],
     "description": "Multithreading for Sqlite, plus expression composition",
-    "extras_require": {"tests": ["mo-testing>=7.523.24033"]},
+    "extras_require": {"tests": ["mo-testing>=7.562.24075"]},
     "include_package_data": true,
     "install_requires": [
-         "jx-python==4.568.24076",    "mo-dots==9.565.24076",   "mo-files==6.566.24076",
-         "mo-future==7.546.24057", "mo-imports==7.546.24057",    "mo-json==6.566.24076",
-         "mo-kwargs==7.565.24076",    "mo-logs==8.566.24076",    "mo-math==7.565.24076",
-            "mo-sql==4.569.24076",     "mo-sql==4.569.24076", "mo-threads==6.566.24076",
-          "mo-times==5.566.24076"
+         "jx-python==4.570.24076",    "mo-dots==9.570.24076",   "mo-files==6.570.24076",
+         "mo-future==7.546.24057", "mo-imports==7.546.24057",    "mo-json==6.570.24076",
+         "mo-kwargs==7.570.24076",    "mo-logs==8.570.24076",    "mo-math==7.570.24076",
+            "mo-sql==4.570.24076",     "mo-sql==4.570.24076", "mo-threads==6.570.24076",
+          "mo-times==5.570.24076"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -66,5 +66,5 @@
     "name": "mo-sqlite",
     "packages": ["mo_sqlite", "mo_sqlite.expressions"],
     "url": "https://github.com/klahnakoski/mo-sqlite",
-    "version": "2.569.24076"
+    "version": "2.570.24076"
 }
