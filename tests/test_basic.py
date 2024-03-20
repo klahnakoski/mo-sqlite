@@ -10,7 +10,9 @@
 import re
 from unittest import TestCase
 
-from mo_sqlite import Sqlite
+from bs4 import BeautifulSoup
+
+from mo_sqlite import Sqlite, quote_value
 from mo_sqlite.expressions import SqlVariable, SqlSelectOp
 from mo_sqlite.expressions.sql_alias_op import SqlAliasOp
 from mo_sqlite.sql_script import SqlStep, SqlTree
@@ -138,4 +140,7 @@ class TestBasic(TestCase):
         }
         self.assertEqual(result, expected)
 
-
+    def test_quote_string(self):
+        soup = BeautifulSoup("<html>text<p>A</p><p>B</p></html>", "html.parser")
+        quoted = quote_value(soup.find("p").string)
+        self.assertEqual(str(quoted), "'A'")
