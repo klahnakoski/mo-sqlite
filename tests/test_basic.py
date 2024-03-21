@@ -24,8 +24,6 @@ whitespace = re.compile(r"\s+", re.MULTILINE)
 
 @add_error_reporting
 class TestBasic(TestCase):
-
-
     @classmethod
     def tearDownClass(cls):
         stop_main_thread()
@@ -54,7 +52,13 @@ class TestBasic(TestCase):
         )
         pets = SqlStep(
             people,
-            SqlSelectOp(SqlVariable("pets"), SqlVariable("id"), SqlVariable("name"), SqlVariable("_order"), SqlVariable("owner")),
+            SqlSelectOp(
+                SqlVariable("pets"),
+                SqlVariable("id"),
+                SqlVariable("name"),
+                SqlVariable("_order"),
+                SqlVariable("owner"),
+            ),
             [SqlAliasOp(SqlVariable("name"), "pets.$A.name")],
             uids=(SqlVariable("owner"), SqlVariable("id")),
             order=(SqlVariable("_order"),),
@@ -107,7 +111,13 @@ class TestBasic(TestCase):
         )
         pets = SqlStep(
             people,
-            SqlSelectOp(SqlVariable("pets"), SqlVariable("id"), SqlVariable("name"), SqlVariable("_order"), SqlVariable("owner")),
+            SqlSelectOp(
+                SqlVariable("pets"),
+                SqlVariable("id"),
+                SqlVariable("name"),
+                SqlVariable("_order"),
+                SqlVariable("owner"),
+            ),
             [SqlAliasOp(SqlVariable("name"), "pets.$A.name")],
             uids=(SqlVariable("owner"), SqlVariable("id")),
             order=(SqlVariable("_order"),),
