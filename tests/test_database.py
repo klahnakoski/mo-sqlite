@@ -31,3 +31,16 @@ class TestDatabase(TestCase):
             result = t.query("SELECT * FROM t")
 
         self.assertEqual(result.data, [(1, 2)])
+
+    def test_context_manager(self):
+        with Sqlite() as db:
+            with db.transaction() as t:
+                t.execute("CREATE TABLE t (a INTEGER, b INTEGER)")
+
+            with db.transaction() as t:
+                t.execute("INSERT INTO t (a, b) VALUES (1, 2)")
+                result = t.query("SELECT * FROM t")
+
+            self.assertEqual(result.data, [(1, 2)])
+
+        self.assertTrue(db.closed)
