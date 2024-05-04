@@ -18,11 +18,11 @@
     "extras_require": {"tests": ["mo-testing>=8.591.24112", "beautifulsoup4>=4.12.3"]},
     "include_package_data": true,
     "install_requires": [
-         "jx-python==4.607.24116",    "mo-dots==9.606.24115",   "mo-files==6.606.24115",
-         "mo-future==7.584.24095", "mo-imports==7.584.24095",    "mo-json==6.606.24115",
-         "mo-kwargs==7.606.24115",    "mo-logs==8.606.24115",    "mo-math==7.606.24115",
-            "mo-sql==4.606.24115",     "mo-sql==4.606.24115", "mo-threads==6.606.24115",
-          "mo-times==5.606.24115"
+         "jx-python==4.625.24125",   "mo-dots==10.623.24125",   "mo-files==6.624.24125",
+         "mo-future==7.584.24095", "mo-imports==7.584.24095",    "mo-json==6.624.24125",
+         "mo-kwargs==7.623.24125",    "mo-logs==8.623.24125",    "mo-math==7.623.24125",
+            "mo-sql==4.624.24125",     "mo-sql==4.624.24125", "mo-threads==6.624.24125",
+          "mo-times==5.623.24125"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -66,5 +66,5 @@
     "name": "mo-sqlite",
     "packages": ["mo_sqlite", "mo_sqlite.expressions"],
     "url": "https://github.com/klahnakoski/mo-sqlite",
-    "version": "2.607.24116"
+    "version": "2.625.24125"
 }
