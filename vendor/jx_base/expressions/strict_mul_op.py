@@ -9,8 +9,8 @@
 #
 
 
-from jx_base.expressions.basic_multi_op import BasicMultiOp
+from jx_base.expressions.strict_multi_op import StrictMultiOp
 
 
-class BasicAddOp(BasicMultiOp):
-    op = "basic.add"
+class StrictMulOp(StrictMultiOp):
+    op = "strict.mul"

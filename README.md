@@ -6,7 +6,7 @@ Multithreading for Sqlite, plus expression composition
 [![PyPI Latest Release](https://img.shields.io/pypi/v/mo-sqlite.svg)](https://pypi.org/project/mo-sqlite/)
 [![Build Status](https://github.com/klahnakoski/mo-sqlite/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/klahnakoski/mo-sqlite/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/klahnakoski/mo-sqlite/badge.svg?branch=dev)](https://coveralls.io/github/klahnakoski/mo-sqlite?branch=dev)
-[![Downloads](https://pepy.tech/badge/mo-sqlite/month)](https://pepy.tech/project/mo-sqlite)
+[![Downloads](https://static.pepy.tech/badge/mo-sqlite/month)](https://pepy.tech/project/mo-sqlite)
 
 
 ## Multi-threaded Sqlite
