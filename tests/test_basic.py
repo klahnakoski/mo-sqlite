@@ -154,3 +154,4 @@ class TestBasic(TestCase):
         soup = BeautifulSoup("<html>text<p>A</p><p>B</p></html>", "html.parser")
         quoted = quote_value(soup.find("p").string)
         self.assertEqual(str(quoted), "'A'")
+
