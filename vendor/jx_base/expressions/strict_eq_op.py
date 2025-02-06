@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -13,11 +13,11 @@ from jx_base.expressions.not_op import NotOp
 from mo_json import JX_BOOLEAN
 
 
-class BasicEqOp(BaseInequalityOp):
+class StrictEqOp(BaseInequalityOp):
     """
     STRICT `==` OPERATOR (CAN NOT DEAL WITH NULLS)
     """
-    op = "basic.eq"
+    op = "strict.eq"
 
     def __call__(self, row, rownum=None, rows=None):
         return self.lhs(row, rownum, rows) == self.rhs(row, rownum, rows)
@@ -31,4 +31,4 @@ class BasicEqOp(BaseInequalityOp):
         if is_literal(lhs) and lhs.value == 0:
             rhs._jx_type = JX_BOOLEAN
             return NotOp(rhs)
-        return lang.BasicEqOp(lhs, rhs)
+        return lang.StrictEqOp(lhs, rhs)

@@ -3,14 +3,14 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from mo_dots import is_data, is_list, Null, coalesce
+from mo_dots import is_data, is_list, Null, coalesce, is_null
 from mo_future import is_text, extend
 from mo_imports import expect, export
 from mo_logs import strings
@@ -30,7 +30,7 @@ def jx_expression_to_function(expr):
     """
     RETURN FUNCTION THAT REQUIRES PARAMETERS (row, rownum=None, rows=None):
     """
-    if expr == None:
+    if is_null(expr):
         return Null
 
     if is_expression(expr):
@@ -112,7 +112,7 @@ def multiop_to_python(self, loop_depth):
         loop_depth,
         JX_NUMBER,
         sign.join(f"coalesce({t.source}, {zero})" for t in self.terms),
-        self
+        self,
     )
 
 

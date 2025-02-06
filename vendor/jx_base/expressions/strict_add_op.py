@@ -3,14 +3,14 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 
 
-from jx_base.expressions.basic_multi_op import BasicMultiOp
+from jx_base.expressions.strict_multi_op import StrictMultiOp
 
 
-class BasicMulOp(BasicMultiOp):
-    op = "basic.mul"
+class StrictAddOp(StrictMultiOp):
+    op = "strict.add"

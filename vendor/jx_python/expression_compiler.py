@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -56,21 +56,21 @@ def compile_expression(source, function_name="output"):
     locals = {}
     try:
         exec(
-            (
-                strings.outdent(f"""
+            (strings.outdent(
+                f"""
                 def {function_name}(row0, rownum0=None, rows0=None):
                     _source = {strings.quote(source)}
                     try:
                         return {source}
                     except Exception as e:
                         Log.error('Problem with dynamic function {{func|quote}}', func=_source, cause=e)
-                """)
-            ),
+                """
+            )),
             {**GLOBALS, **source.locals},
-            locals
+            locals,
         )
         func = locals[function_name]
         setattr(func, "_source", source)
         return func
     except Exception as e:
-        raise Log.error(u"Bad source: {{source}}", source=source, cause=e)
+        raise Log.error("Bad source: {{source}}", source=source, cause=e)

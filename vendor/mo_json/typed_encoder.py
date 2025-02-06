@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -18,15 +18,10 @@ from mo_dots import (
     NullType,
     SLOT,
     _get,
-    is_data,
     join_field,
     split_field,
     concat_field,
 )
-from mo_logs import Log
-from mo_logs.strings import quote
-from mo_times import Date, Duration
-
 from mo_future import (
     binary_type,
     generator_types,
@@ -36,6 +31,10 @@ from mo_future import (
     sort_using_key,
     text,
 )
+from mo_logs import Log
+from mo_logs.strings import quote
+from mo_times import Date, Duration
+
 from mo_json import (
     BOOLEAN,
     ESCAPE_DCT,
@@ -45,7 +44,6 @@ from mo_json import (
     NUMBER,
     STRING,
     float2json,
-    datetime2unix,
     python_type_to_jx_type,
     quote,
     python_type_to_jx_type_key,
@@ -57,6 +55,7 @@ from mo_json.encoder import (
     json_encoder,
     problem_serializing,
 )
+from mo_json.scrubber import datetime2unix
 from mo_json.typed_object import TypedObject
 from mo_json.types import BOOLEAN_KEY, NUMBER_KEY, INTEGER_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, IS_TYPE_KEY
 

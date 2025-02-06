@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -15,6 +15,7 @@ from jx_base.expressions.null_op import NULL
 from jx_base.expressions.true_op import TRUE
 from jx_base.expressions.when_op import WhenOp
 from jx_base.language import is_op
+from jx_base.meta_columns import get_schema_from_list
 from jx_base.models.container import Container
 from jx_base.models.facts import Facts
 from jx_base.models.namespace import Namespace
@@ -35,6 +36,7 @@ __all__ = [
     "enlist",
     "Facts",
     "FALSE",
+    "get_schema_from_list",
     "is_op",
     "jx_expression",
     "JX",

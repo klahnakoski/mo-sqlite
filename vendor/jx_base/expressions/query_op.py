@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -149,8 +149,6 @@ class QueryOp(Expression):
         query = to_data(query)
 
         frum = query["from"]
-        # FIND THE TABLE IN from CLAUSE
-        base_name, _ = tail_field(frum)
         frum = container.container.get_table(frum)
         schema = frum.schema
 
@@ -190,7 +188,7 @@ class QueryOp(Expression):
             output.select = _normalize_selects(Null, [select or "."], query.format)
 
         output.select.frum = frum.schema
-        output.where = _normalize_where(query.where, lang)
+        output.where = _normalize_where(query.where)
         output.window = [_normalize_window(w) for w in enlist(query.window)]
         output.sort = _normalize_sort(query.sort)
 

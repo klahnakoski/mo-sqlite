@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -41,7 +41,8 @@ class GroupOp(_GroupOp):
 
 def groupby(values, func):
     output = []
-    cmp = lambda a, b: value_compare(detype(func(a)), detype(func(b)))
+    def cmp(a, b):
+        return value_compare(detype(func(a)), detype(func(b)))
     for g, rows in itertools.groupby(sort_using_cmp(values, cmp=cmp), func):
         row = list(rows)
         if is_data(g):

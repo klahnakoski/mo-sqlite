@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -27,7 +27,10 @@ class WhenOp(Expression):
         self.when = when
         self.then = then
         self.els_ = clauses.get("else", NULL)
-        self._jx_type = self.then.jx_type | self.els_.jx_type
+
+    @property
+    def jx_type(self):
+        return self.then.jx_type | self.els_.jx_type
 
     def __data__(self):
         return {

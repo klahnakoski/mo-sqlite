@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -11,17 +11,16 @@
 
 import operator
 
+from jx_base.language import is_expression, Language
+from jx_base.utils import enlist, delist
 from mo_dots import is_sequence, is_missing, is_data
-from mo_future import get_function_name, is_text, text, utf8_json_encoder
+from mo_future import get_function_name, is_text, utf8_json_encoder
 from mo_imports import expect, export
+from mo_json import BOOLEAN, INTEGER, IS_NULL, NUMBER, STRING, scrub
+from mo_json.types import union_type
 from mo_logs import Except, Log
 from mo_math import is_number
 from mo_times import Date
-
-from jx_base.language import is_expression, Language
-from jx_base.utils import enlist
-from mo_json import BOOLEAN, INTEGER, IS_NULL, NUMBER, STRING, scrub
-from mo_json.types import union_type
 
 TYPE_CHECK = True  # A LITTLE FASTER IF False
 ALLOW_SCRIPTING = False
@@ -164,17 +163,32 @@ precedence = [
     "name",
     "default",
     "limit",
-    "skip",
     "percentile",
     "select",
-    "having",
+    # "having",
     "group",
     "filter",
     "where",
-    "edges",
+    # "edges",
     "from",
     "value",
+    "literal",
 ]
+
+
+def symbiotic(op, frum, *args, **kwargs):
+    if frum.precedence > op.precedence:
+        return {
+            op.op: delist(args),
+            **self.frum.__data__(),
+            **kwargs
+        }
+    else:
+        return {
+            op.op: delist(args),
+            "from": self.frum.__data__(),
+            **kwargs
+        }
 
 
 export("jx_base.domains", jx_expression)

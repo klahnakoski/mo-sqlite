@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -24,9 +24,7 @@ class SelectOp(_SelectOp):
     def to_python(self, loop_depth=0):
         frum = ToArrayOp(self.frum).partial_eval(Python).to_python(loop_depth)
         loop_depth = frum.loop_depth + 1
-        selects = tuple(
-            SelectOne(t.name, t.expr.partial_eval(Python).to_python(loop_depth)) for t in self.terms
-        )
+        selects = tuple(SelectOne(t.name, t.expr.partial_eval(Python).to_python(loop_depth)) for t in self.terms)
 
         if len(self.terms) == 1 and self.terms[0].name == ".":
             # value selection

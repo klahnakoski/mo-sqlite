@@ -2,7 +2,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -17,7 +17,8 @@ from jx_base.expressions import (
     SelectOp,
     ArrayOfOp,
     LimitOp,
-    GroupOp, ToArrayOp,
+    GroupOp,
+    ToArrayOp,
 )
 from jx_base.expressions.select_op import SelectOne
 from jx_base.language import value_compare
@@ -68,8 +69,7 @@ class Stream:
     def map(self, accessor):
         if isinstance(accessor, dict):
             fact = ExpressionFactory(SelectOp(
-                self.factory.expr,
-                *(SelectOne(n, factory(v).expr) for n, v in to_data(accessor).leaves())
+                self.factory.expr, *(SelectOne(n, factory(v).expr) for n, v in to_data(accessor).leaves())
             ))
         else:
             accessor = factory(accessor)

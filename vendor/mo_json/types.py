@@ -2,7 +2,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -419,10 +419,7 @@ _jx_type_to_json_type = {
 
 def jx_type_to_json_type(jx_type):
     basic_type = base_type(jx_type)
-    if basic_type == OBJECT:
-        return OBJECT
-    return _jx_type_to_json_type.get(basic_type)
-
+    return _jx_type_to_json_type.get(basic_type, OBJECT)
 
 _python_type_to_jx_type = {
     int: JX_INTEGER,

@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -11,8 +11,7 @@
 
 import math
 
-from mo_dots import FlatList, Null, dict_to_data
-from mo_dots.lists import list_types
+from mo_dots import FlatList, Null, dict_to_data, is_list
 from mo_future import binary_type, text
 from mo_logs import Log
 from mo_logs.exceptions import Except
@@ -118,7 +117,7 @@ def chunk(data, size=0):
     if not size:
         return [data]
 
-    if data.__class__ in list_types + (tuple, bytearray, text, binary_type):
+    if is_list(data) or isinstance(data, (bytearray, text, binary_type)):
         # USE SLICING
         def _iter():
             num = int(math.ceil(len(data) / size))

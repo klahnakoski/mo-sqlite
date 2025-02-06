@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -17,9 +17,6 @@ from mo_json.types import JX_BOOLEAN
 
 class SqlAndOp(BaseMultiOp):
     _jx_type = JX_BOOLEAN
-
-    def __init__(self, *args):
-        super().__init__(*args)
 
     def __data__(self):
         return {"sql.and": [t.__data__() for t in self.terms]}

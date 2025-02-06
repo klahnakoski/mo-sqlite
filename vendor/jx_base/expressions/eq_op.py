@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -12,7 +12,7 @@
 from jx_base.expressions._utils import _jx_expression
 from jx_base.expressions.and_op import AndOp
 from jx_base.expressions.base_inequality_op import BaseInequalityOp
-from jx_base.expressions.basic_eq_op import BasicEqOp
+from jx_base.expressions.strict_eq_op import StrictEqOp
 from jx_base.expressions.case_op import CaseOp
 from jx_base.expressions.false_op import FALSE
 from jx_base.expressions.literal import is_literal, Literal
@@ -80,4 +80,4 @@ class EqOp(BaseInequalityOp):
             return lang.EqOp(lhs, rhs)
 
 
-export("jx_base.expressions.basic_in_op", EqOp)
+export("jx_base.expressions.strict_in_op", EqOp)

@@ -3,13 +3,13 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 
 
-from jx_base.expressions.basic_substring_op import BasicSubstringOp
+from jx_base.expressions.strict_substring_op import StrictSubstringOp
 from jx_base.expressions.expression import Expression
 from jx_base.expressions.length_op import LengthOp
 from jx_base.expressions.literal import ZERO
@@ -56,5 +56,5 @@ class LeftOp(Expression):
         max_length = LengthOp(value)
 
         return WhenOp(
-            self.missing(lang), **{"else": BasicSubstringOp(value, ZERO, MaxOp(ZERO, MinOp(length, max_length)),)}
+            self.missing(lang), **{"else": StrictSubstringOp(value, ZERO, MaxOp(ZERO, MinOp(length, max_length)),)}
         ).partial_eval(lang)

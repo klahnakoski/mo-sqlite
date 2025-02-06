@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -25,8 +25,6 @@ WhenOp = expect("WhenOp")
 
 class CaseOp(Expression):
     def __init__(self, *terms):
-        if not is_sequence(terms):
-            Log.error("case expression requires a list of `when` sub-clauses")
         Expression.__init__(self, *terms)
         if len(terms) == 0:
             Log.error("Expecting at least one clause")

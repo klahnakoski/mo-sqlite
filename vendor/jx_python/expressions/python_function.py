@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -28,13 +28,7 @@ class PythonFunction(_PythonFunction):
         self._name = f"boxed_function{randoms.string(8)}"
 
     def to_python(self, loop_depth=0):
-        return PythonScript(
-            {self._name: self.func},
-            loop_depth,
-            self.jx_type,
-            f"{self._name}(row{loop_depth})",
-            self,
-        )
+        return PythonScript({self._name: self.func}, loop_depth, self.jx_type, f"{self._name}(row{loop_depth})", self,)
 
     def __data__(self):
         return {"python_function": {}}

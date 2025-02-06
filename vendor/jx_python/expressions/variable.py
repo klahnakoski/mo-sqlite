@@ -3,7 +3,7 @@
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http:# mozilla.org/MPL/2.0/.
+# You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
@@ -24,7 +24,11 @@ class Variable(_Variable):
             if loop_depth == 0:
                 # WE ASSUME THIS IS NAIVE PYTHON EXPRESSION BUILD
                 return PythonScript(
-                    merge_locals(get_attr=get_attr, enlist=enlist), loop_depth, JX_ANY, f"get_attr(enlist(row{loop_depth}), {quote(self.var)})", self
+                    merge_locals(get_attr=get_attr, enlist=enlist),
+                    loop_depth,
+                    JX_ANY,
+                    f"get_attr(enlist(row{loop_depth}), {quote(self.var)})",
+                    self,
                 )
 
             logger.error("not expected")
