@@ -1,2 +1,2 @@
-mo-testing>=8.623.24125
-beautifulsoup4>=4.12.3
+mo-testing>=8.667.25032
+beautifulsoup4>=4.13.3
