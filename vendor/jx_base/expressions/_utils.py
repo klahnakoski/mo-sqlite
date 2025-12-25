@@ -151,7 +151,7 @@ builtin_ops = {
     "min": lambda *v: min(*v),
     "most": lambda *v: max(*v),
     "least": lambda *v: min(*v),
-    "sql.concat": lambda *v: "".join(*v)
+    "sql.concat": lambda *v: "".join(*v),
 }
 
 operators = {}
@@ -178,17 +178,9 @@ precedence = [
 
 def symbiotic(op, frum, *args, **kwargs):
     if frum.precedence > op.precedence:
-        return {
-            op.op: delist(args),
-            **self.frum.__data__(),
-            **kwargs
-        }
+        return {op.op: delist(args), **self.frum.__data__(), **kwargs}
     else:
-        return {
-            op.op: delist(args),
-            "from": self.frum.__data__(),
-            **kwargs
-        }
+        return {op.op: delist(args), "from": self.frum.__data__(), **kwargs}
 
 
 export("jx_base.domains", jx_expression)

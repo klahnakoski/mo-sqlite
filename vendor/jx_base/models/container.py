@@ -73,4 +73,3 @@ class Container(object):
                 Log.error("Do not know how to handle {{frum|json}}", frum=frum)
         else:
             Log.error("Do not know how to handle {{type}}", type=frum.__class__.__name__)
-

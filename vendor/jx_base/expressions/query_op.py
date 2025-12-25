@@ -194,7 +194,6 @@ class QueryOp(Expression):
 
         return output
 
-
     def __data__(self):
         return {
             "from": self.frum.__data__(),

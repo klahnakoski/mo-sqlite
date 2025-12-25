@@ -272,6 +272,7 @@ def pretty_json(value):
     scrub = Scrubber().scrub
     return _pretty_json(value, scrub)
 
+
 def _pretty_json(value, scrub):
     try:
         if value is False:

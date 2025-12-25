@@ -191,8 +191,13 @@ class ListContainer(Container, Namespace, Table):
             return [d[select] for d in self.data]
 
     def select(self, select):
-        selects= select.terms
-        if len(selects) == 1 and is_variable(selects[0].value) and selects[0].value.var == "." and selects[0].name == ".":
+        selects = select.terms
+        if (
+            len(selects) == 1
+            and is_variable(selects[0].value)
+            and selects[0].value.var == "."
+            and selects[0].name == "."
+        ):
             return self
 
         exprs = [jx_expression(s.value) for s in selects]
@@ -203,7 +208,7 @@ class ListContainer(Container, Namespace, Table):
             for s, e in zip(selects, exprs):
                 value = e(row)
                 result[s.name] = e(row)
-                jx_type = jx_type | s.name+value_to_jx_type(value)
+                jx_type = jx_type | s.name + value_to_jx_type(value)
             new_data.append(from_data(result))
 
         new_name = f"from {self.name}"

@@ -228,7 +228,7 @@ class {{class_name}}(Mapping):
             "false": False,
             "true": True,
             "null": None,
-            "opener": "{{"
+            "opener": "{{",
         },
     )
     register_data(output)

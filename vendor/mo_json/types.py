@@ -271,7 +271,17 @@ PRIMITIVE = (EXISTS, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING)
 INTERNAL = (EXISTS, OBJECT, ARRAY)
 STRUCT = (OBJECT, ARRAY)
 
-BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~e~", "~j~"
+BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY = (
+    "~b~",
+    "~i~",
+    "~n~",
+    "~t~",
+    "~d~",
+    "~s~",
+    "~a~",
+    "~e~",
+    "~j~",
+)
 IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
 IS_TYPE_KEY = re.compile(r"^~[bintdsaje]~$")
 
@@ -420,6 +430,7 @@ _jx_type_to_json_type = {
 def jx_type_to_json_type(jx_type):
     basic_type = base_type(jx_type)
     return _jx_type_to_json_type.get(basic_type, OBJECT)
+
 
 _python_type_to_jx_type = {
     int: JX_INTEGER,
