@@ -11,7 +11,7 @@ Multithreading for Sqlite, plus expression composition
 
 ## Multi-threaded Sqlite
 
-This wrapper serializes writes to prevent interleaving, and reduces lock errors while keeping simple SQLite usage.
+This wrapper serializes writes from multiple threads to prevent lock errors while keeping simple SQLite usage.
 
 Here is typical usage: 
 
