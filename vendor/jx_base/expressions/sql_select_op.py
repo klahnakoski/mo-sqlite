@@ -37,6 +37,7 @@ class SqlSelectOp(Expression):
         self.terms = terms + tuple(*(SqlAliasOp(v, k) for k, v in kwargs.items()))
         self._jx_type = union_type(*(t.name + t.value.jx_type for t in terms))
 
+
     @property
     def jx_type(self):
         return union_type(*(t.value.jx_type for t in self.terms))

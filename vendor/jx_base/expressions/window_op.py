@@ -16,7 +16,16 @@ jx = expect("jx")
 
 
 class OneWindow:
-    def __init__(self, *, select=None, edges=None, where=None, sort=None, range=None):
+
+    def __init__(
+        self,
+        *,
+        select=None,
+        edges=None,
+        where=None,
+        sort=None,
+        range=None
+    ):
         self.select = select
         self.edges = edges
         self.where = where
@@ -42,7 +51,10 @@ class WindowOp(Expression):
                 if raw_window[slot]:
                     temp = jx_expression({"from": frum, slot: raw_window[slot]})
                     new_window[slot] = getattr(temp, attr)
-            temp = jx_expression({"from": frum, "select": {k: raw_window[k] for k in ["name", "value", "aggregate"]}})
+            temp = jx_expression({
+                "from": frum,
+                "select": {k: raw_window[k] for k in ["name", "value", "aggregate"]}
+            })
             new_window["select"] = temp.terms
             new_window["range"] = raw_window["range"]
             frum = WindowOp(frum, OneWindow(**new_window))

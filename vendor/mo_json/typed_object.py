@@ -97,7 +97,7 @@ class TypedObject(OrderedDict):
             return self._attachments.keys()
         if is_data(self._boxed_value):
 
-            return set(python_type_to_jx_type_key for k in self._boxed_value.keys())
+            return set( python_type_to_jx_type_key  for k in self._boxed_value.keys())
             return self._boxed_value.keys() | self._attachments.keys()
         type_key = python_type_to_jx_type_key.get(type(self._boxed_value))
         return {type_key} | self._attachments.keys()

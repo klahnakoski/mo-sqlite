@@ -42,7 +42,7 @@ from jx_base.models.table import Table
 from jx_base.utils import delist, enlist
 from jx_python.convert import list2cube, list2table
 from jx_python.expressions import jx_expression_to_function
-from jx_python.lists.aggs import is_aggs, list_aggs
+from jx_python.containers.lists.aggs import is_aggs, list_aggs
 from mo_json import JX_IS_NULL, value_to_jx_type
 
 jx, get_schema_from_list, Column = expect("jx", "get_schema_from_list", "Column")

@@ -35,7 +35,7 @@ class RowsOp(Expression):
     def __call__(self, row, rownum, rows):
         v = self.var(row, rownum, rows)
         o = self.offset(row, rownum, rows)
-        return rows[rownum + o][v]
+        return rows[rownum+o][v]
 
     def __data__(self):
         if is_literal(self.var) and is_literal(self.offset):

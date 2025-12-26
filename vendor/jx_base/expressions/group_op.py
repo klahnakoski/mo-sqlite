@@ -99,3 +99,5 @@ def _normalize_group(edge, dim_index, limit, schema=None):
             "dim": dim_index,
             "domain": DefaultDomain(limit=limit, desc=edge),
         }])
+
+

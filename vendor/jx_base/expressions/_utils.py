@@ -49,10 +49,7 @@ JX = Language(None)
 
 def jx_expression(expr, lang=JX):
     # UPDATE THE VARIABLE WITH THEIR KNOWN TYPES
-    try:
-        return _jx_expression(expr, lang).partial_eval(lang)
-    except Exception as cause:
-        print(cause)
+    return _jx_expression(expr, lang).partial_eval(lang)
 
 
 def _jx_expression(json, lang):

@@ -11,7 +11,7 @@
 
 from jx_base.utils import enlist
 
-from mo_dots import Data, is_data, is_many
+from mo_dots import Data,is_data,is_many
 from mo_imports import expect
 from mo_logs import Log
 
@@ -22,6 +22,12 @@ config = Data()  # config.default IS EXPECTED TO BE SET BEFORE CALLS ARE MADE
 
 
 class Container:
+    """
+    CONTAINERS HOLD MULTIPLE INDICES AND CAN HANDLE
+    GENERAL JSON QUERY EXPRESSIONS ON ITS CONTENTS
+    METADATA FOR A Container IS CALLED A Namespace
+    """
+
     @staticmethod
     def create(container):
         if isinstance(container, (Container, Cube, ListContainer)):
@@ -38,3 +44,5 @@ class Container:
         type2container[name] = container
         if not config.default:
             config.default = name
+
+

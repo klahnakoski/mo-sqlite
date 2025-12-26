@@ -18,7 +18,6 @@ class ValueOp(Expression):
     """
     A NO-OP FOR SYMBIOTIC FUNCTIONS
     """
-
     _jx_type = JX_ANY
 
     def __init__(self, value):

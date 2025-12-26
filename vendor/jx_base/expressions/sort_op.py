@@ -23,7 +23,10 @@ class SortOne:
         self.direction = direction
 
 
+
+
 class SortOp(Expression):
+
     def __init__(self, frum, *sorts):
         Expression.__init__(self, frum)
         for s in sorts:
@@ -34,7 +37,7 @@ class SortOp(Expression):
 
     @classmethod
     def define(cls, expr):
-        raw_frum, *raw_sorts = expr["sort"]
+        raw_frum,  *raw_sorts = expr["sort"]
         frum = _jx_expression(raw_frum, cls.lang)
         sorts = _normalize_sort(*raw_sorts)
         return SortOp(frum, *sorts)
@@ -56,12 +59,16 @@ def _normalize_sort(sort=None) -> List[SortOne]:
             # {field: direction} format:  eg {"machine_name": "desc"}
             if all(d in sort_direction for d in s.values()):
                 for v, d in s.items():
-                    output.append(SortOne(jx_expression(v), sort_direction[d]))
+                    output.append(SortOne(
+                        jx_expression(v),
+                        sort_direction[d]
+                    ))
             else:
                 Log.error("`sort` clause must have a `value` property")
         else:
             output.append(SortOne(
-                jx_expression(coalesce(s.get("value"), s.get("field"))), sort_direction[s.get("sort")]
+                jx_expression(coalesce(s.get("value"), s.get("field"))),
+                sort_direction[s.get("sort")]
             ))
     return output
 
@@ -77,3 +84,4 @@ sort_direction = {
     -1: -1,
     None: 1,
 }
+

@@ -35,9 +35,7 @@ from mo_dots import (
     to_data,
     dict_to_data,
     last,
-    startswith_field,
-    coalesce,
-    register_many,
+    startswith_field, coalesce, register_many,
 )
 from mo_future import first, sort_using_key
 from mo_imports import export, expect
@@ -70,7 +68,10 @@ class ListContainer(Container, Namespace, Table):
 
     @property
     def jx_type(self):
-        return self.name + array_of(union_type(*(col.name + to_jx_type(col.json_type) for col in self.schema.columns)))
+        return self.name + array_of(union_type(*(
+            col.name + to_jx_type(col.json_type)
+            for col in self.schema.columns
+        )))
 
     def __call__(self, row=None, rownum=None, rows=None):
         return self

@@ -46,7 +46,10 @@ class QueryOp(Expression):
     ]
 
     def __init__(
-        self, frum, chunk_size=None, destination=None,
+            self,
+            frum,
+            chunk_size=None,
+            destination=None,
     ):
         Expression.__init__(self, None)
         self.frum = frum

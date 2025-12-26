@@ -22,7 +22,16 @@ Column = expect("Column")
 
 
 class OneEdge:
-    def __init__(self, frum, *, name, value, allowNulls, dim, domain):
+    def __init__(
+        self,
+        frum,
+        *,
+        name,
+        value,
+        allowNulls,
+        dim,
+        domain
+    ):
         self.frum = frum
         self.name = name
         self.value = value
@@ -97,11 +106,7 @@ def _normalize_edge(frum, edge, dim_index, limit, schema):
         else:
             return [OneEdge(
                 frum=frum,
-                name=edge,
-                value=jx_expression(edge),
-                allowNulls=True,
-                dim=dim_index,
-                domain=DefaultDomain(),
+                name=edge, value=jx_expression(edge), allowNulls=True, dim=dim_index, domain=DefaultDomain(),
             )]
     else:
         edge = to_data(edge)
@@ -146,7 +151,11 @@ def _normalize_range(range):
     if range == None:
         return None
 
-    return OneRange(min=jx_expression(range.min), max=jx_expression(range.max), mode=range.mode,)
+    return OneRange(
+        min=jx_expression(range.min),
+        max=jx_expression(range.max),
+        mode=range.mode,
+    )
 
 
 def _normalize_domain(domain=None, limit=None, schema=None):

@@ -501,7 +501,9 @@ def sort(frum, *sorts):
         return 0
 
     sorted_data = list(sorted((from_data(d) for d in frum), key=cmp_to_key(comparer)))
-    return ListContainer(".", data=sorted_data, schema=frum.schema)
+    return ListContainer(
+        ".", data=sorted_data, schema=frum.schema
+    )
 
 
 def count(values):
