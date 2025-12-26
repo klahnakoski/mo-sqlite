@@ -11,14 +11,15 @@ Multithreading for Sqlite, plus expression composition
 
 ## Multi-threaded Sqlite
 
-This module wraps the `sqlite3.connection` with thread-safe traffic manager.  Here is typical usage: 
+This wrapper serializes writes to prevent interleaving, and reduces lock errors while keeping simple SQLite usage.
+
+Here is typical usage: 
 
     from mo_sqlite import Sqlite
     db = Sqlite("mydb.sqlite")
     with db.transaction() as t:
         t.command("insert into mytable values (1, 2, 3)")
 
-While you may have each thread own a `sqlite3.connection` to the same file, you will still get exceptions when another thread has the file locked.
 
 ## Pull JSON out of database
 
