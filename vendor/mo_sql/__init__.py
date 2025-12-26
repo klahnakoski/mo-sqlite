@@ -141,7 +141,7 @@ class ConcatSQL(SQL):
         if ENABLE_TYPE_CHECKING:
             if any(not isinstance(s, SQL) for s in concat):
                 Log.error(
-                    "Can only join other SQL not {value}", value=first(s for s in concat if not isinstance(s, SQL))
+                    "Can only join other SQL not {value}", value=first(s for s in concat if not isinstance(s, SQL)),
                 )
         self.concat = concat
 
@@ -229,7 +229,7 @@ SQL_DOT = SQL(".")
 
 class DB:
     """
-    Quoting, or escaping, database entitiy names (columns, tables, etc) is database specific
+    Quoting, or escaping, database entity names (columns, tables, etc) is database specific
     """
 
     def quote_column(self, *path):

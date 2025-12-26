@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mo_sqlite import sql_delete
+from mo_sqlite import sql_delete, sql_query
 
 
 class TestSqlGeneration(TestCase):
@@ -15,6 +15,10 @@ class TestSqlGeneration(TestCase):
     def test_delete_using_in(self):
         sql = str(sql_delete("$$", {"in": {"a": [1, 2]}}))
         self.assertEqual(remove_extra_space(sql), 'DELETE FROM "$$" WHERE a IN ( 1, 2 )')
+
+    def test_sql_limit(self):
+        sql = str(sql_query({"from": "table", "limit": 20}))
+        self.assertEqual(remove_extra_space(sql), "SELECT * FROM table LIMIT 20")
 
 
 def remove_extra_space(sql):

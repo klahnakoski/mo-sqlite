@@ -4,24 +4,22 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://www.mozilla.org/en-US/MPL/2.0/.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from unittest import TestCase
 
-from mo_sql import sql_iso
-
-from mo_dots import Data
+from mo_dots import Data, to_data
+from mo_testing import assertAlmostEqual, add_error_reporting
 from mo_threads import Signal, Thread
 
 import mo_sqlite
-from mo_sqlite import Sqlite, quote_value
+from jx_base import NULL
+from mo_sql import sql_iso
+from mo_sqlite import Sqlite, quote_value, Container
 from mo_sqlite.database import DOUBLE_TRANSACTION_ERROR
 
 mo_sqlite.DEBUG = True
 
 
+@add_error_reporting
 class TestTransaction(TestCase):
     def test_interleaved_transactions(self):
         db, threads, signals = self._setup()

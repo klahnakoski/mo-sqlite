@@ -11,22 +11,6 @@
 
 import itertools
 
-from jx_base.expressions._utils import jx_expression
-
-from jx_base.expressions import TRUE
-from jx_base.expressions.variable import is_variable
-from jx_base.language import is_expression
-from jx_base.meta_columns import get_schema_from_jx_type
-from jx_base.models.container import Container
-from jx_base.models.namespace import Namespace
-from jx_base.models.schema import Schema
-from jx_base.models.snowflake import Snowflake
-from jx_base.models.table import Table
-from jx_base.utils import delist, enlist
-from jx_python.convert import list2cube, list2table
-from jx_python.expressions import jx_expression_to_function
-from jx_python.expressions._utils import compile_expression, JXExpression
-from jx_python.lists.aggs import is_aggs, list_aggs
 from mo_collections import UniqueIndex
 from mo_dots import (
     Data,
@@ -42,9 +26,24 @@ from mo_dots import (
 )
 from mo_future import first, sort_using_key
 from mo_imports import export, expect
-from mo_json import ARRAY, JX_IS_NULL, value_to_json_type, value_to_jx_type
 from mo_logs import Log
 from mo_threads import Lock
+
+from jx_base.expressions import TRUE
+from jx_base.expressions._utils import jx_expression
+from jx_base.expressions.variable import is_variable
+from jx_base.language import is_expression
+from jx_base.meta_columns import get_schema_from_jx_type
+from jx_base.models.container import Container
+from jx_base.models.namespace import Namespace
+from jx_base.models.schema import Schema
+from jx_base.models.snowflake import Snowflake
+from jx_base.models.table import Table
+from jx_base.utils import delist, enlist
+from jx_python.convert import list2cube, list2table
+from jx_python.expressions import jx_expression_to_function
+from jx_python.lists.aggs import is_aggs, list_aggs
+from mo_json import JX_IS_NULL, value_to_jx_type
 
 jx, get_schema_from_list, Column = expect("jx", "get_schema_from_list", "Column")
 
@@ -145,7 +144,7 @@ class ListContainer(Container, Namespace, Table):
                     }],
                 )
             else:
-                Log.error("unknown format {{format}}", format=query.format)
+                Log.error("unknown format {format}", format=query.format)
         else:
             return output
 
@@ -251,8 +250,7 @@ class ListContainer(Container, Namespace, Table):
     def insert(self, documents):
         self.data.extend(documents)
 
-    def extend(self, documents):
-        self.data.extend(documents)
+    extend = insert
 
     def __data__(self):
         if first(self.schema.columns).name == ".":
@@ -282,13 +280,13 @@ class ListContainer(Container, Namespace, Table):
 
     def get_snowflake(self, name):
         if self.name != name:
-            Log.error("This container only has table by name of {{name}}", name=name)
+            Log.error("This container only has table by name of {name}", name=name)
         return self
 
     def get_table(self, name):
         if self is name or self.name == name:
             return self
-        Log.error("This container only has table by name of {{name}}", name=name)
+        Log.error("This container only has table by name of {name}", name=name)
 
 
 DUAL = ListContainer(

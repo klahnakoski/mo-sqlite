@@ -12,10 +12,9 @@
 from jx_base.expressions.expression import Expression, _jx_expression
 from jx_base.expressions.sql_inner_join_op import SqlJoinOne
 from jx_base.expressions.sql_left_joins_op import SqlLeftJoinsOp
-from jx_base.language import is_op
+from jx_base.language import is_op, is_expression
 from jx_base.models.container import Container
-from mo_dots import is_many, coalesce, is_data
-from mo_logs import logger
+from mo_dots import to_data
 
 
 class FromOp(Expression):
@@ -24,15 +23,10 @@ class FromOp(Expression):
     def __init__(self, frum):
         Expression.__init__(self, frum)
         self.frum = frum
-        self._jx_type = frum.jx_type
 
     @classmethod
     def define(cls, expr):
-        if len(expr) != 1:
-            logger.error("Expecting a single from expression, not {expr}", expr=expr)
-        frum = expr["from"]
-        if not is_many(frum):
-            return _jx_expression(frum, cls.lang)
+        return FromOp(_jx_expression(to_data(expr)["from"], cls.lang))
 
         root, *rest = frum
         joins = []
@@ -46,6 +40,19 @@ class FromOp(Expression):
             ))
 
         return SqlLeftJoinsOp(_jx_expression(root, cls.lang), *joins)
+
+    def __call__(self, row=None, rownum=None, rows=None):
+        if is_expression(self.frum):
+            return self.frum(row, rownum, rows)
+        return self.frum
+
+    @property
+    def jx_type(self):
+        return self.frum.jx_type
+
+    @property
+    def schema(self):
+        return self.frum.schema
 
     def apply(self, container: Container):
         return container.query(self.frum)
@@ -69,7 +76,9 @@ class FromOp(Expression):
         return self.frum.invert()
 
     def partial_eval(self, lang):
-        return FromOp(self.frum.partial_eval(lang))
+        if isinstance(self.frum, Container):
+            return lang.FromOp(self.frum)
+        return lang.FromOp(self.frum.partial_eval(lang))
 
     @property
     def jx_type(self):

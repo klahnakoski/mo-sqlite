@@ -63,7 +63,7 @@ def datetime2unix(value):
                 "Can not convert {{value}} of type {{type}}", value=value, type=value.__class__,
             )
     except Exception as e:
-        logger.error("Can not convert {{value}}", value=value, cause=e)
+        logger.error("Can not convert {value}", value=value, cause=e)
 
 
 class Scrubber:

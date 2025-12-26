@@ -62,7 +62,7 @@ class ToIntegerOp(Expression):
             elif isinstance(v, (int, float)):
                 return term
             else:
-                Log.error("can not convert {{value|json}} to integer", value=term.value)
+                Log.error("can not convert {value|json} to integer", value=term.value)
         elif base_type(term.jx_type) == JX_INTEGER:
             return term
         elif is_op(term, CaseOp):  # REWRITING

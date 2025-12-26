@@ -7,13 +7,14 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-
-
 from mo_future import is_text
 from mo_logs import Log
 
+from jx_base.language import ID
+from jx_base.models.container import Container
 
-class Facts(object):
+
+class Facts(Container):
     """
     REPRESENT A HIERARCHICAL DATASTORE: MULTIPLE TABLES IN A DATABASE ALONG
     WITH THE RELATIONS THAT CONNECT THEM ALL, BUT LIMITED TO A TREE
@@ -24,6 +25,7 @@ class Facts(object):
             Log.error("parameter is wrong")
         self.container = container
         self.name = name
+        setattr(self, ID, -1)
 
     @property
     def namespace(self):
@@ -36,3 +38,7 @@ class Facts(object):
     @property
     def schema(self):
         return self.container.namespace.get_schema(self.name)
+
+    @property
+    def jx_type(self):
+        return self.snowflake.jx_type
