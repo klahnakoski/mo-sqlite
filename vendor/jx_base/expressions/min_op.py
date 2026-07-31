@@ -10,8 +10,9 @@
 
 
 from jx_base.expressions.expression import Expression
-from jx_base.expressions.false_op import FALSE
 from jx_base.expressions.least_op import LeastOp
+from jx_base.utils import enlist
+from mo_dots import Null, exists
 from mo_json.types import JX_NUMBER
 
 
@@ -23,16 +24,11 @@ class MinOp(Expression):
     _jx_type = JX_NUMBER
 
     def __new__(cls, *terms, frum=None):
-        if frum is not None:
-            op = object.__new__(MinOp)
-            op.__init__(frum=frum)
-            return op
-        elif len(terms) > 1:
+        if frum is None and len(terms) > 1:
             return LeastOp(*terms, nulls=True)
-        else:
-            op = object.__new__(MinOp)
-            op.__init__(frum=terms[0])
-            return op
+        # object.__new__(cls), NOT object.__new__(MinOp): THE LANGUAGE-SPECIFIC SUBCLASS MUST
+        # SURVIVE, OR partial_eval RETURNS A JX OP TO A lang THAT ASKED FOR ITS OWN
+        return object.__new__(cls)
 
     def __init__(self, *terms, frum=None):
         if terms:
@@ -41,17 +37,23 @@ class MinOp(Expression):
         Expression.__init__(self, frum)
         self.frum = frum
 
+    def __call__(self, row=None, rownum=None, rows=None):
+        values = [v for v in enlist(self.frum(row, rownum, rows)) if exists(v)]
+        if not values:
+            return Null
+        return min(values)
+
     def __data__(self):
         return {"min": self.frum.__data__()}
 
     def vars(self):
         return self.frum.vars()
 
+    def join_vars(self):
+        return set()  # AN AGGREGATE OVER A COLLECTION BRINGS ITS OWN SOURCE
+
     def map(self, map_):
         return MinOp(frum=self.frum.map(map_))
 
-    def missing(self, lang):
-        return FALSE
-
     def partial_eval(self, lang):
-        return MinOp(frum=self.frum.partial_eval(lang))
+        return lang.MinOp(frum=self.frum.partial_eval(lang))

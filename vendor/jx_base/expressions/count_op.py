@@ -9,6 +9,8 @@
 
 from mo_dots import exists
 
+from jx_base.utils import enlist
+
 from jx_base.expressions.expression import Expression
 from jx_base.expressions.false_op import FALSE
 from jx_base.expressions.tally_op import TallyOp
@@ -25,16 +27,11 @@ class CountOp(Expression):
     _jx_type = JX_INTEGER
 
     def __new__(cls, *terms, frum=None):
-        if frum is not None:
-            op = object.__new__(CountOp)
-            op.__init__(frum=frum)
-            return op
-        elif len(terms) > 1:
+        if frum is None and len(terms) > 1:
             return TallyOp(*terms, nulls=True)
-        else:
-            op = object.__new__(CountOp)
-            op.__init__(frum=terms[0])
-            return op
+        # object.__new__(cls), NOT object.__new__(CountOp): THE LANGUAGE-SPECIFIC SUBCLASS MUST
+        # SURVIVE, OR partial_eval RETURNS A JX OP TO A lang THAT ASKED FOR ITS OWN
+        return object.__new__(cls)
 
     def __init__(self, *terms, frum=None):
         if terms:
@@ -42,11 +39,20 @@ class CountOp(Expression):
         Expression.__init__(self, frum)
         self.frum = frum
 
-    def __call__(self, row, rownum, rows):
-        return sum((1 for t in self.frum(row, rownum, rows) if exists(t)), 0)
+    def __call__(self, row, rownum=None, rows=None):
+        return sum((1 for t in enlist(self.frum(row, rownum, rows)) if exists(t)), 0)
 
     def __data__(self):
         return {"count": self.frum.__data__()}
+
+    def vars(self):
+        return self.frum.vars()
+
+    def join_vars(self):
+        return set()  # AN AGGREGATE OVER A COLLECTION BRINGS ITS OWN SOURCE
+
+    def map(self, map_):
+        return CountOp(frum=self.frum.map(map_))
 
     def partial_eval(self, lang):
         return lang.CountOp(frum=self.frum.partial_eval(lang))

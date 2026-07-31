@@ -9,8 +9,9 @@
 #
 
 
-from jx_base.expressions.base_binary_op import BaseBinaryOp
+from jx_base.expressions import PercentilesOp as _PercentilesOp
+from jx_python.expressions._utils import multiop_to_python
 
 
-class ExpOp(BaseBinaryOp):
-    pass
+class PercentilesOp(_PercentilesOp):
+    to_python = multiop_to_python

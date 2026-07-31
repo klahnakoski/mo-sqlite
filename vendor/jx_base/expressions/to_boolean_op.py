@@ -8,7 +8,8 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 
-from jx_base.expressions.expression import Expression, TRUE
+from jx_base.expressions.expression import Expression, FALSE, TRUE
+from mo_dots import exists
 from mo_imports import export
 from mo_json import JX_BOOLEAN
 
@@ -24,6 +25,10 @@ class ToBooleanOp(Expression):
         Expression.__init__(self, term)
         self.term = term
 
+    def __call__(self, row, rownum=None, rows=None):
+        v = self.term(row, rownum, rows)
+        return exists(v) and v is not False
+
     def __data__(self):
         return {"boolean": self.term.__data__()}
 
@@ -37,7 +42,10 @@ class ToBooleanOp(Expression):
         return ToBooleanOp(self.term.map(map_))
 
     def missing(self, lang):
-        return self.term.missing(lang)
+        # A COERCION TO BOOLEAN IS NEVER NULL: `exists(v) and v is not False` (SEE __call__).
+        # RETURNING term.missing() MADE EVERY PREDICATE BUILT ON IT NULLABLE, WHICH BREAKS THE
+        # SqlScript INVARIANT THAT A `miss` IS NOT ITSELF MISSING
+        return FALSE
 
     def partial_eval(self, lang):
         term = self.term.partial_eval(lang)

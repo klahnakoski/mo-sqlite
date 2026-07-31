@@ -214,6 +214,16 @@ class ColumnList(Table, Container):
                     self._update_meta()
 
                 if not abs_column_name:
+                    # SNOWFLAKE MEMBERSHIP IS DEFINED BY _snowflakes, NOT NAME-PREFIX
+                    # ALGEBRA; AFTER rename_tables THE ALIASES SHARE NO PREFIX
+                    query_paths = self._snowflakes.get(fact_table)
+                    if query_paths:
+                        return [
+                            cc
+                            for table in query_paths
+                            for c in self.data.get(table, {}).values()
+                            for cc in c
+                        ]
                     return [
                         cc
                         for table, cs in self.data.items()
@@ -463,7 +473,9 @@ class ColumnList(Table, Container):
             Log.error("not found", table_name=table_name)
         nested_path = []
         for query_path in query_paths:
-            if startswith_field(clean_name, query_path):
+            # query_paths ARE TYPED (testing._a.$A); COMPARE IN THE SAME (FIXED) SPACE AS
+            # clean_name, ELSE AN UNTYPED REQUEST NEVER MATCHES ITS OWN TABLE, ONLY THE FACT
+            if startswith_field(clean_name, fixer(query_path)):
                 nested_path.append(query_path)
         return list(reversed(nested_path))
 

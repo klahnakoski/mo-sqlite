@@ -37,16 +37,21 @@ from mo_future import Mapping
 from mo_future import binary_type, items, long, none_type, text
 from mo_imports import export
 from mo_json import (
+    BOOLEAN,
     INTEGER,
     NUMBER,
+    TIME,
+    INTERVAL,
     STRING,
     OBJECT,
     EXISTS,
     ARRAY,
+    JSON,
     python_type_to_json_type,
     ARRAY_KEY,
     jx_type_to_json_type,
 )
+from mo_json.types import JX_IS_NULL
 from mo_json.typed_encoder import EXISTS_KEY
 from mo_logs import logger
 from mo_times.dates import Date
@@ -90,7 +95,9 @@ column_constraint = {"and": [
     #     ]},
     #     "else": True,
     # },
-    {"when": {"eq": {"es_column": "."}}, "then": {"in": {"json_type": [ARRAY, OBJECT]}}, "else": True},
+    # es_column="." is the nameless root; for the dynamically-typed python target it may hold a
+    # primitive value (a nameless scalar list), not only a container. See jx_base/CLAUDE.md.
+    {"when": {"eq": {"es_column": "."}}, "then": {"in": {"json_type": [ARRAY, OBJECT, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING, JSON]}}, "else": True},
     {"not": {"find": {"es_column": "null"}}},
     {"not": {"eq": {"es_column": "string"}}},
     {"not": {"eq": {"es_type": "object", "json_type": EXISTS}}},
@@ -244,6 +251,9 @@ def _get_columns_from_jx_type(nested_path, jx_type):
     paths = [nested_path[0]]
     columns = []
     for path, type in jx_type.leaves():
+        if type is JX_IS_NULL:
+            # an always-missing value carries no type; it gets no column
+            continue
         if endswith_field(path, ARRAY_KEY):
             child = concat_field(nested_path[0], join_field(split_field(path)[:-1]))
             more_paths, more_columns = _get_columns_from_jx_type([child, *nested_path], type)
@@ -290,7 +300,8 @@ def _get_schema_from_list(
     native_type_to_json_type,  # dict from storage type name to json type name
 ):
     for row in frum:
-        if is_missing(row):
+        if is_missing(row) or getattr(row, "_jx_type", None) is JX_IS_NULL:
+            # a jx NULL literal (leaked from a downstream expression) is missing, not a type
             continue
 
         full_name = concat_field(nested_path[0], prefix)
@@ -300,7 +311,8 @@ def _get_schema_from_list(
         elif is_many(row):  # GET TYPE OF MULTIVALUE
             v = list(row)
             if len(v) == 1:
-                es_type = v[0].__class__.__name__
+                row = v[0]  # a single-element array is the scalar (JX convention)
+                es_type = row.__class__.__name__
             else:
                 es_type = row.__class__.__name__
         else:
@@ -533,7 +545,7 @@ def _merge_python_type(A, B):
 
 def query_metadata(container, query):
     container = container.namespace.columns.denormalized()
-    normalized = QueryOp.wrap(query)
+    normalized = QueryOp.wrap(query, container, JX)
     return container.query(normalized)
 
 

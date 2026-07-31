@@ -303,7 +303,8 @@ def is_op(call, op) -> bool:
 
 def is_expression(call):
     try:
-        return getattr(call, ID, None) != None
+        # isinstance CHECK: FlatList BROADCASTS getattr OVER ITS ITEMS, RETURNING A (NON-None) FlatList
+        return isinstance(getattr(call, ID, None), int)
     except Exception:
         return False
 
@@ -348,6 +349,14 @@ def value_compare(left, right, ordering=1):
             left = None
             ltype = none_type
         if rtype is float and isnan(right):
+            right = None
+            rtype = none_type
+
+        # THE EMPTY STRING IS NULL (SEE Literal.missing), SO IT SORTS WITH THE NULLS
+        if ltype is text and not left:
+            left = None
+            ltype = none_type
+        if rtype is text and not right:
             right = None
             rtype = none_type
 

@@ -17,12 +17,11 @@ from jx_base.expressions.variable import is_variable
 from jx_base.language import is_expression, ID
 from jx_base.meta_columns import get_schema_from_jx_type, get_schema_from_list
 from jx_base.models.container import Container
-from jx_base.models.namespace import Namespace
 from jx_base.models.schema import Schema
 from jx_base.models.snowflake import Snowflake
 from jx_base.models.table import Table
-from jx_base.utils import delist, enlist
-from jx_python.containers.lists.aggs import is_aggs, list_aggs
+from jx_base.utils import delist, enlist, is_true
+from jx_python.containers.lists.aggs import is_aggs, list_aggs, value_aggs
 from jx_python.convert import list2cube, list2table
 from jx_python.expressions import jx_expression_to_function
 from mo_collections import UniqueIndex
@@ -46,7 +45,7 @@ from mo_threads import Lock
 jx = expect("jx")
 
 
-class ListContainer(Container, Namespace, Table):
+class ListContainer(Container, Table):
     """
     A CONTAINER WITH ONLY ONE TABLE
     A PYTHON LIST PAIRED WITH SCHEMA SO QUERY EXPRESSIONS CAN BE TRANSPILED
@@ -118,6 +117,9 @@ class ListContainer(Container, Namespace, Table):
         query = to_data(query)
         output = self
         if is_aggs(query):
+            if not query.edges and not query.groupby and query.format in (None, "list"):
+                # ONE GROUP, SO THE RESULT IS THE VALUE ITSELF
+                return Data(data=value_aggs(output.data, query), meta={"format": "value"})
             output = list_aggs(output.data, query)
         else:
             if query.where is not TRUE:
@@ -133,29 +135,27 @@ class ListContainer(Container, Namespace, Table):
         for param in query.window:
             output.window(param)
 
-        if query.format:
-            if query.format == "list":
-                return Data(data=output.data, meta={"format": "list"})
-            elif query.format == "table":
-                head = [c.name for c in output.schema.snowflake.columns]
-                data = [[r if h == "." else r[h] for h in head] for r in output.data]
-                return Data(header=head, data=data, meta={"format": "table"})
-            elif query.format == "cube":
-                head = [c.name for c in output.schema.snowflake.columns]
-                rows = [[r[h] for h in head] for r in output.data]
-                data = {h: c for h, c in zip(head, zip(*rows))}
-                return Data(
-                    data=data,
-                    meta={"format": "cube"},
-                    edges=[{
-                        "name": "rownum",
-                        "domain": {"type": "rownum", "min": 0, "max": len(rows), "interval": 1},
-                    }],
-                )
-            else:
-                logger.error("unknown format {format}", format=query.format)
+        if query.format in (None, "list"):
+            # NAMING THE format MUST NOT CHANGE THE ANSWER: THE DEFAULT *IS* list
+            return Data(data=output.data, meta={"format": "list"})
+        elif query.format == "table":
+            head = [c.name for c in output.schema.snowflake.columns]
+            data = [[r if h == "." else r[h] for h in head] for r in output.data]
+            return Data(header=head, data=data, meta={"format": "table"})
+        elif query.format == "cube":
+            head = [c.name for c in output.schema.snowflake.columns]
+            rows = [[r[h] for h in head] for r in output.data]
+            data = {h: c for h, c in zip(head, zip(*rows))}
+            return Data(
+                data=data,
+                meta={"format": "cube"},
+                edges=[{
+                    "name": "rownum",
+                    "domain": {"type": "rownum", "min": 0, "max": len(rows), "interval": 1},
+                }],
+            )
         else:
-            return output
+            logger.error("unknown format {format}", format=query.format)
 
     def update(self, command):
         """
@@ -181,12 +181,12 @@ class ListContainer(Container, Namespace, Table):
         else:
             temp = where
 
-        return ListContainer("from " + self.name, filter(temp, self.data), self.schema)
+        return ListContainer("from " + self.name, [d for d in self.data if is_true(temp(d))], self.schema)
 
     filter = where
 
     def sort(self, sort):
-        return ListContainer("sorted " + self.name, jx.sort(self.data, sort, already_normalized=True), self.schema,)
+        return ListContainer("sorted " + self.name, jx.sort(self.data, *enlist(sort)), self.schema,)
 
     def get(self, select):
         """

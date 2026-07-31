@@ -11,10 +11,12 @@
 from typing import List
 
 from jx_base.expressions._utils import jx_expression, _jx_expression
-from jx_base.expressions.expression import Expression
+from jx_base.expressions.expression import Expression, is_expression
 from jx_base.utils import enlist
-from mo_dots import coalesce
+from mo_dots import coalesce, from_data
 from mo_future import is_text
+from mo_logs import Log
+from mo_math import is_integer
 
 
 class SortOne:
@@ -49,11 +51,12 @@ def _normalize_sort(sort=None) -> List[SortOne]:
     """
     output = []
     for s in enlist(sort):
+        s = from_data(s)  # Data MAY HOLD A PRIMITIVE; UNWRAP ASAP
         if is_text(s):
             output.append(SortOne(jx_expression(s), 1))
         elif is_expression(s):
             output.append(SortOne(s, 1))
-        elif mo_math.is_integer(s):
+        elif is_integer(s):
             output.append(SortOne(jx_expression({"offset": s}), 1))
         elif not s.get("sort") and not s.get("value"):
             # {field: direction} format:  eg {"machine_name": "desc"}

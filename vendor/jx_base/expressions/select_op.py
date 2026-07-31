@@ -17,7 +17,7 @@ from jx_base.expressions.leaves_op import LeavesOp
 from jx_base.expressions.literal import Literal
 from jx_base.expressions.name_op import NameOp
 from jx_base.expressions.null_op import NULL
-from jx_base.expressions.variable import Variable
+from jx_base.expressions.variable import Variable, is_variable
 from jx_base.language import is_op
 from jx_base.models.container import Container
 from jx_base.utils import is_variable_name
@@ -31,6 +31,13 @@ from mo_math import is_number
 
 
 class SelectOne:
+    """
+    AN AGGREGATE IS A *DECLARATION*, NOT AN OPERATOR: `{"value":"a", "aggregate":"count"}` COLLAPSES
+    OVER THE ROWS OF THE from, WHILE `{"value":{"count":"a"}}` IS AN EXPRESSION OF ONE DOCUMENT -
+    count OVER THAT DOCUMENT'S a.  BOTH BUILD A CountOp, SO THE DECLARATION IS RECORDED IN
+    `_aggregate` AND CAN NOT BE RECOVERED FROM THE EXPRESSION'S CLASS.
+    """
+
     def __init__(self, name, value, aggregate=NULL, default=NULL):
         if not isinstance(name, str):
             Log.error("expecting a name")
@@ -39,15 +46,27 @@ class SelectOne:
         _name.simplified = True
         self._value = object.__new__(NameOp)
         self._value._name = _name
+        self._aggregate = NULL
         if aggregate is not NULL:
             if isinstance(aggregate, str):
                 self._value.frum = canonical_aggregates[aggregate](frum=value)
             else:
                 self._value.frum = canonical_aggregates[aggregate.__class__](frum=value)
+            self._aggregate = self._value.frum
         else:
             self._value.frum = value
         if default is not NULL:
             self._value.frum = DefaultOp(self._value.frum, jx_expression(default))
+
+    @classmethod
+    def aggregated(cls, name, agg_op, default=NULL):
+        """
+        agg_op IS AN ALREADY-BUILT AGGREGATE (IT CARRIES ITS OWN OPTIONS, LIKE percentile), AND ITS
+        PRESENCE HERE IS THE DECLARATION
+        """
+        output = cls(name, agg_op, default=default)
+        output._aggregate = agg_op
+        return output
 
     def __data__(self):
         return {"name": self.name, "value": self.value, "aggregate": self.aggregate.name}
@@ -62,12 +81,10 @@ class SelectOne:
 
     @property
     def default(self):
-        agg = value = self._value.frum
-        if is_op(value, DefaultOp):
-            agg = agg.frum
-        else:
+        value = self._value.frum
+        if not is_op(value, DefaultOp):
             return NULL
-        if agg.__class__ in canonical_aggregates:
+        if self._aggregate is not NULL:
             return value.default
 
         # without an aggregate, we will treat this as a simple expression, no default
@@ -75,21 +92,14 @@ class SelectOne:
 
     @property
     def aggregate(self):
-        agg = value = self._value.frum
-        if is_op(value, DefaultOp):
-            agg = agg.frum
-        if agg.__class__ in canonical_aggregates:
-            return agg
-        return NULL
+        return self._aggregate
 
     @property
     def value(self):
-        agg = value = self._value.frum
-        if is_op(value, DefaultOp):
-            agg = agg.frum
-        if agg.__class__ in canonical_aggregates:
-            return agg.frum
-        return value
+        if self._aggregate is not NULL:
+            return self._aggregate.frum
+        # NOT AN AGGREGATE: THE WHOLE EXPRESSION IS THE VALUE, DefaultOp WRAPPER INCLUDED
+        return self._value.frum
 
     @property
     def jx_type(self):
@@ -99,10 +109,14 @@ class SelectOne:
         return output
 
     def set_default(self, default):
-        return SelectOne(self.name, DefaultOp(self._value.frum, jx_expression(default)))
+        output = SelectOne(self.name, DefaultOp(self._value.frum, jx_expression(default)))
+        output._aggregate = self._aggregate
+        return output
 
     def set_name(self, name):
-        return SelectOne(name, self._value.frum)
+        output = SelectOne(name, self._value.frum)
+        output._aggregate = self._aggregate
+        return output
 
     def __data__(self):
         return self._value.__data__()
@@ -156,11 +170,11 @@ class SelectOp(Expression):
                         if not is_variable_name(t.value):
                             Log.error("expecting {value} a simple dot-delimited path name", value=t.value)
                         else:
-                            terms.append(SelectOne(t.value, agg))
+                            terms.append(SelectOne.aggregated(t.value, agg))
                     else:
                         Log.error("expecting a name property")
                 else:
-                    terms.append(SelectOne(t.name, agg))
+                    terms.append(SelectOne.aggregated(t.name, agg))
             elif t.name == None:
                 if t.value == None:
                     Log.error("expecting select parameters to have name and value properties")
@@ -252,7 +266,8 @@ def normalize_one(frum, select, format):
     if is_text(select):
         if select == "*":
             return SelectOp(frum, SelectOne(".", LeavesOp(Variable("."))))
-        select = SelectOne(select, jx_expression(select))
+        # KEEP AS TEXT VALUE (NO NAME) SO `.*`/`*` WILDCARD HANDLING BELOW APPLIES
+        select = to_data({"value": select})
     else:
         select = to_data(select)
         unexpected = select.keys() - {
@@ -261,6 +276,7 @@ def normalize_one(frum, select, format):
             "default",
             "aggregate",
             "percentile",
+            "prefix",
         }
         if unexpected:
             Log.error(
@@ -284,10 +300,13 @@ def normalize_one(frum, select, format):
             canonical = SelectOne(coalesce(name, aggregate, "."), jx_expression(value))
         elif value.endswith(".*"):
             root_name = value[:-2]
-            value = jx_expression(root_nam)
+            value = jx_expression(root_name)
             if not is_variable(value):
                 Log.error("do not know what to do")
-            canonical = SelectOne(coalesce(name, root_name), LeavesOp(value, prefix=select.prefix))
+            # IMPLICIT STAR IS NAMED dot: LEAVES LAND AT TOP LEVEL, PREFIX STRIPPED
+            # (SEE docs/jx_expressions_leaves.md; AN EXPLICIT name MAKES A CONTAINER)
+            prefix = Literal(select.prefix) if select.prefix else None
+            canonical = SelectOne(coalesce(name, "."), LeavesOp(value, prefix=prefix))
         elif value.endswith("*"):
             root_name = value[:-1]
             path = split_field(root_name)
@@ -308,7 +327,7 @@ def normalize_one(frum, select, format):
 
     if aggregate is not NULL and aggregate != None:
         agg_op = canonical_aggregates[aggregate](frum=canonical.value)
-        canonical = SelectOne(canonical.name, agg_op)
+        canonical = SelectOne.aggregated(canonical.name, agg_op)
         if select.percentile:
             if not isinstance(select.pecentile, float):
                 Log.error("Expecting `percentile` to be a float")
@@ -316,9 +335,10 @@ def normalize_one(frum, select, format):
     if select.default is not NULL and select.default != None:
         canonical = canonical.set_default(select.default)
 
-    if format != "list" and canonical.name != ".":
-        canonical = canonical.set_name(literal_field(canonical.name))
-
+    # A TERM'S NAME IS CARRIED AS WRITTEN, WHATEVER THE FORMAT.  table/cube USED TO GET
+    # literal_field(name) HERE - MAKING `a.b` ONE FIELD SO THE PATH ALGEBRA WOULD KEEP IT WHOLE -
+    # WHICH MEANT THE SAME QUERY COMPILED DIFFERENTLY PER FORMAT, EVERY CONSUMER HAD TO UNESCAPE,
+    # AND A NAME THAT WAS *ALREADY* ONE ESCAPED FIELD (`a..html`) BECAME UNPARSEABLE
     return SelectOp(Null, canonical)
 
 

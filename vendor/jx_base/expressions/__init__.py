@@ -26,7 +26,7 @@ from jx_base.expressions.eq_op import EqOp
 from jx_base.expressions.es_script import EsScript
 from jx_base.expressions.es_select_op import ESSelectOp
 from jx_base.expressions.exists_op import ExistsOp
-from jx_base.expressions.exp_op import ExpOp
+from jx_base.expressions.pow_op import PowOp
 from jx_base.expressions.expression import Expression
 from jx_base.expressions.false_op import FalseOp, FALSE
 from jx_base.expressions.filter_op import FilterOp
@@ -72,6 +72,7 @@ from jx_base.expressions.offset_op import OffsetOp
 from jx_base.expressions.or_op import OrOp
 from jx_base.expressions.outer_join_op import OuterJoinOp
 from jx_base.expressions.percentile_op import PercentileOp
+from jx_base.expressions.percentiles_op import PercentilesOp
 from jx_base.expressions.prefix_op import PrefixOp
 from jx_base.expressions.product_op import ProductOp
 from jx_base.expressions.python_function import PythonFunction
@@ -120,6 +121,7 @@ from jx_base.expressions.strict_multi_op import StrictMultiOp
 from jx_base.expressions.strict_not_op import StrictNotOp
 from jx_base.expressions.strict_starts_with_op import StrictStartsWithOp
 from jx_base.expressions.strict_substring_op import StrictSubstringOp
+from jx_base.expressions.stats_op import StatsOp
 from jx_base.expressions.sub_op import SubOp
 from jx_base.expressions.suffix_op import SuffixOp
 from jx_base.expressions.sum_op import SumOp
@@ -151,6 +153,8 @@ set_default(
         "and": AndOp,
         "array": ArrayOfOp,
         "avg": AvgOp,
+        "average": AvgOp,
+        "mean": AvgOp,
         "strict.add": StrictAddOp,
         "strict.boolean": StrictBooleanOp,
         "strict.mul": StrictMulOp,
@@ -169,7 +173,9 @@ set_default(
         "edges": EdgesOp,
         "eq": EqOp,
         "exists": ExistsOp,
-        "exp": ExpOp,
+        "pow": PowOp,
+        "power": PowOp,
+        # "exp" is reserved for the unary natural exponential e**x (not implemented)
         "filter": FilterOp,
         "find": FindOp,
         "first": FirstOp,
@@ -188,6 +194,9 @@ set_default(
         "group_by": GroupOp,
         "in": InOp,
         "instr": FindOp,
+        "integer": ToIntegerOp,
+        "is_boolean": IsBooleanOp,
+        "is_integer": IsIntegerOp,
         "is_number": IsNumberOp,
         "is_text": IsTextOp,
         "least": LeastOp,
@@ -201,13 +210,16 @@ set_default(
         "le": LteOp,
         "match_all": TrueOp,
         "max": MaxOp,
+        "median": PercentilesOp,
+        "min": MinOp,
         "minus": SubOp,
         "missing": MissingOp,
         "mod": ModOp,
         "most": MostOp,
-        "mul": ProductOp,
-        "mult": ProductOp,
-        "multiply": ProductOp,
+        # CONSERVATIVE PRODUCT, LIKE "add"->AddOp; "product" REMAINS THE DECISIVE ProductOp
+        "mul": MulOp,
+        "mult": MulOp,
+        "multiply": MulOp,
         "name": NameOp,
         "ne": NeOp,
         "neq": NeOp,
@@ -219,6 +231,7 @@ set_default(
         "offset": OffsetOp,
         "or": OrOp,
         "percentile": PercentileOp,
+        "percentiles": PercentilesOp,
         "postfix": SuffixOp,
         "prefix": PrefixOp,
         "range": RangeOp,
@@ -232,6 +245,7 @@ set_default(
         "sort": SortOp,
         "orderby": SortOp,
         "split": SplitOp,
+        "stats": StatsOp,
         "sql.and": SqlAndOp,
         "sql.alias": SqlAliasOp,
         "sql.concat": SqlConcatOp,
